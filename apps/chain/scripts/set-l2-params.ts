@@ -24,6 +24,8 @@ import { getNetwork } from './lib/networks';
 import { readJson, type RollupFile } from './lib/deployments';
 import { ARB_GAS_INFO, ARB_OWNER, ARB_OWNER_PUBLIC, ARB_SYS, minBaseFeeWei, l1RewardRatePerUnit } from './lib/params';
 import { arbGasInfoAbi, arbOwnerAbi, arbOwnerPublicAbi, arbSysAbi } from './lib/precompiles';
+import { waitForReceipt } from './lib/clients';
+import { appendLaunchLog } from './lib/launch-log';
 
 const DRY = process.argv.includes('--dry-run');
 
@@ -128,14 +130,20 @@ async function main() {
       console.log(`  ~ ${c.label} (dry-run)`);
       continue;
     }
+    // Re-read the gas price per call: setMinimumL2BaseFee/setL2BaseFee move the base fee immediately and a
+    // fee cap derived from the previous block would be rejected ("max fee per gas less than block base fee").
+    const l2GasPrice = await publicClient.getGasPrice();
     const hash: Hex = await walletClient.writeContract({
       address: ARB_OWNER,
       abi: arbOwnerAbi,
       functionName: c.fn,
       args: c.args as never,
+      maxFeePerGas: l2GasPrice * 3n,
+      maxPriorityFeePerGas: 0n,
     });
-    const r = await publicClient.waitForTransactionReceipt({ hash });
+    const r = await waitForReceipt(publicClient, hash);
     console.log(`  ${r.status === 'success' ? '✓' : '✗'} ${c.label} tx ${hash}`);
+    appendLaunchLog(netName, `- ${new Date().toISOString()} | L2 set:l2-params ArbOwner.${c.label} | tx \`${hash}\` | L2 block ${r.blockNumber} | ${r.status} | gas ${r.gasUsed} (paid in ANTB on L2)`);
     if (r.status !== 'success') throw new Error(`${c.label} reverted`);
   }
   console.log('\nDone.');

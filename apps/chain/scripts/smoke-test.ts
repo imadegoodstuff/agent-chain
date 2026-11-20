@@ -68,6 +68,33 @@ async function main() {
     check(sent.body.error?.code === -32050, 'gateway rejects non-agent eth_sendRawTransaction', `${sent.body.error?.code} ${sent.body.error?.message ?? ''}`);
     const health = await fetch(`${gw.replace(/\/$/, '')}/health`);
     check(health.ok, 'gateway /health 200');
+
+    // 4) a gas-paying tx from the chain owner (allow-listed) goes through the gateway and is mined
+    const ownerKey = optionalEnv('CHAIN_OWNER_PRIVATE_KEY');
+    if (ownerKey) {
+      const owner = privateKeyToAccount(ownerKey as `0x${string}`);
+      const gwClient = createPublicClient({ chain, transport: http(gw) });
+      const nonce = await gwClient.getTransactionCount({ address: owner.address, blockTag: 'pending' });
+      const gp = await gwClient.getGasPrice();
+      // Nitro's intrinsic gas includes the parent-chain calldata component, so 21,000 is not enough: estimate.
+      const gasEst = await gwClient.estimateGas({ account: owner.address, to: owner.address, value: 0n });
+      const ownerRaw = await owner.signTransaction({ chainId: net.childChainId, to: owner.address, value: 0n, gas: (gasEst * 12n) / 10n, maxFeePerGas: gp * 3n, maxPriorityFeePerGas: 0n, nonce, type: 'eip1559' } as never);
+      const ownerSent = await rpc(gw, 'eth_sendRawTransaction', [ownerRaw]);
+      check(typeof ownerSent.body.result === 'string', 'gateway accepts chain-owner eth_sendRawTransaction', String(ownerSent.body.result ?? ownerSent.body.error?.message));
+      if (typeof ownerSent.body.result === 'string') {
+        let receipt: { status: string; blockNumber: bigint; gasUsed: bigint; effectiveGasPrice: bigint } | undefined;
+        for (let i = 0; i < 30 && !receipt; i++) {
+          try {
+            receipt = (await gwClient.getTransactionReceipt({ hash: ownerSent.body.result as `0x${string}` })) as never;
+          } catch {
+            await new Promise((r) => setTimeout(r, 1000));
+          }
+        }
+        check(receipt?.status === 'success', 'chain-owner tx mined on L2', receipt ? `block ${receipt.blockNumber}, gas ${receipt.gasUsed} @ ${receipt.effectiveGasPrice} wei (${Number(receipt.gasUsed * receipt.effectiveGasPrice) / 1e18} ANTB)` : 'no receipt in 30 s');
+      }
+    } else {
+      console.log('skip  chain-owner tx (CHAIN_OWNER_PRIVATE_KEY not set)');
+    }
   } else {
     console.log('skip  gateway checks (GATEWAY_URL not set)');
   }

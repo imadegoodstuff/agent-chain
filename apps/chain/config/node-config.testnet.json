@@ -72,7 +72,11 @@
     "bold": {
       "assertion-posting-interval": "15m",
       "assertion-scanning-interval": "1m",
-      "assertion-confirming-interval": "1m"
+      "assertion-confirming-interval": "1m",
+      "parent-chain-block-time": "450ms",
+      "state-provider-config": {
+        "check-batch-finality": false
+      }
     },
     "block-validator": {
       "enable": true

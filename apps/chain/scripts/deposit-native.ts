@@ -9,8 +9,9 @@
 import { parseEther, type Address } from 'viem';
 import { networkName, privateKeyEnv, optionalEnv } from './lib/env';
 import { getNetwork } from './lib/networks';
-import { parentClients, assertParentChainId } from './lib/clients';
+import { parentClients, assertParentChainId, waitForReceipt } from './lib/clients';
 import { requireJson, type RollupFile } from './lib/deployments';
+import { logTx } from './lib/launch-log';
 import { erc20Abi, erc20InboxAbi } from './lib/precompiles';
 
 async function main() {
@@ -32,11 +33,14 @@ async function main() {
   const allowance = await publicClient.readContract({ address: token, abi: erc20Abi, functionName: 'allowance', args: [account.address, inbox] });
   if (allowance < amount) {
     const h = await walletClient.writeContract({ address: token, abi: erc20Abi, functionName: 'approve', args: [inbox, amount] });
-    await publicClient.waitForTransactionReceipt({ hash: h });
+    const ar = await waitForReceipt(publicClient, h);
+    if (ar.status !== 'success') throw new Error(`approve reverted: ${h}`);
+    logTx(netName, `deposit-native approve ${amountArg} tokens for ERC20Inbox ${inbox}`, ar);
     console.log(`approved inbox ${inbox}: tx ${h}`);
   }
   const h2 = await walletClient.writeContract({ address: inbox, abi: erc20InboxAbi, functionName: 'depositERC20', args: [amount] });
-  const r = await publicClient.waitForTransactionReceipt({ hash: h2 });
+  const r = await waitForReceipt(publicClient, h2);
+  logTx(netName, `deposit-native ERC20Inbox.depositERC20(${amountArg}) from ${account.address}`, r, `${amountArg} ANTB bridged to L2`);
   console.log(`depositERC20(${amountArg}) ${r.status}: tx ${h2}. Funds arrive on L2 at ${account.address} once the delayed message is sequenced.`);
 }
 

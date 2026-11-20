@@ -9,6 +9,9 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "keys:generate": "tsx scripts/generate-keys.ts",
+    "fund:roles": "tsx scripts/fund-roles.ts",
+    "fund:validator": "tsx scripts/fund-validator-stake.ts",
+    "build:nitro-bsc": "tsx scripts/build-nitro-bsc.ts",
     "deploy:tantb": "tsx scripts/deploy-tantb.ts",
     "deploy:creator": "tsx scripts/deploy-creator.ts",
     "deploy:pricer": "tsx scripts/deploy-pricer.ts",

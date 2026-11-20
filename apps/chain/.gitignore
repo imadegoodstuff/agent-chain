@@ -9,6 +9,10 @@ dist/
 deployments/local/
 gateway/node_modules/
 gateway/dist/
-nitro-bsc/src/
+# nitro-bsc/src/ is committed (patched nitro-contracts sources for the hackathon); build outputs are not
 nitro-bsc/artifacts/
 nitro-bsc/cache/
+nitro-bsc/src/precompiles/.github/
+nitro-bsc/src/precompiles/yarn.lock
+nitro-bsc/src/precompiles/package.json
+nitro-bsc/src/precompiles/foundry.toml

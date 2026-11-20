@@ -1,6 +1,6 @@
 # AGENT CHAIN L2 on BSC — research & deployment design
 
-Status: research complete, scripts dry-run end to end on a local "fake BSC" (Hardhat, chainId 31337, base fee 0). Nothing has been sent to BSC yet (no funds). Date: 2026-11-20.
+Status: **mainnet launched 2026-11-20** (chain 1119 on BSC 56; see README and `deployments/mainnet/LAUNCH-LOG.md`). The local dry run (Hardhat "fake BSC") missed two BSC behaviours that only show on the real chain — §7.12 (retired precompile at `address(100)` burns all gas → nitro-contracts needed a one-line patch and a rebuild) and §7.13 (Nitro treats BSC as a chain without finality because `header.difficulty != 0`). Both are fixed in the repo; costs in §4 were confirmed within 2 % (73.45M gas for the factory set, 7.96M for `createRollup`).
 
 Everything below follows `../../SPEC.md`. Where the stack forces a deviation it is called out in §9.
 
@@ -17,7 +17,8 @@ Everything below follows `../../SPEC.md`. Where the stack forces a deviation it 
 | Deployment SDK | `@arbitrum/chain-sdk` **0.28.0** (npm, 2026-09-11; renamed from `@arbitrum/orbit-sdk`, whose last release is 0.26.0) | 0.28 added exactly what BSC needs: `deployRollupCreator`, `deployWeth`, `deployTokenBridgeCreator`, `registerCustomParentChain`, RollupCreator v3.2 ABIs, consensus-v61 root. Peer dep viem `^1.20` (we use 1.21.4 for scripts; the gateway uses viem 2.x separately). [Releases](https://github.com/OffchainLabs/arbitrum-chain-sdk/releases) |
 | Parent chains | BSC Testnet (97) → BSC Mainnet (56) | Measured 2026-11-20 via public RPC: block time **0.450 s** (mainnet) / 0.452 s (testnet); `baseFeePerGas = 0`; gas price 0.05 gwei (mainnet) / 0.1 gwei (testnet); block gas limit 79.8M (mainnet) / 99.7M (testnet); `finalized`/`safe` tags supported; `eth_feeHistory` OK. |
 | Gas token | mainnet **ANTB** `0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`; testnet **tANTB** (`contracts/TestANTB.sol`, we deploy) | ANTB on-chain probe (§7.4): 18 decimals, 1:1 non-rebasing, `transfer(self, 0)` returns true — meets Nitro's custom-gas-token requirements. |
-| Stake token (BoLD) | WBNB — mainnet `0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c`, testnet `0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd` | Nitro requires an ERC-20 stake token; WBNB is the canonical wrapped native. Base stake 1 WBNB (mainnet) / 0.01 (testnet); permissioned validators. |
+| Stake token (BoLD) | WBNB — mainnet `0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c`, testnet `0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd` | Nitro requires an ERC-20 stake token; WBNB is the canonical wrapped native. Base stake **0.02 WBNB (mainnet Beta, was planned as 1)** / 0.01 (testnet); permissioned validators, so the stake is a liveness bond. `BOLD_BASE_STAKE` env overrides; raise later via `increaseBaseStake`. |
+| Parent-chain contracts on BSC | v3.2.0 with **one patched library** (`nitro-bsc/patches/ArbitrumChecker.sol`) in SequencerInbox, RollupAdminLogic, RollupUserLogic, RollupEventInbox, ERC20RollupEventInbox | Required by §7.12. All other 21 contracts are byte-identical to the upstream artifacts (verified by recompiling with upstream solc 0.8.17 / london / runs 2000·20·200 and diffing). |
 | Hosting | Fly.io `sin`, `fly deploy --remote-only`; node `shared-cpu-4x` 4 GB + 50 GB volume; gateway `shared-cpu-1x` 512 MB | Both images build successfully with `fly deploy --remote-only --build-only` (gateway 53 MB, node 644 MB). |
 
 ### Important correction to the brief
@@ -108,7 +109,7 @@ Generated with `prepareChainConfig` (key order matters — Nitro hashes the stri
 | `minimumAssertionPeriod` | 2,000 (15 min) | 2,000 | SDK: 15 min |
 | `validatorAfkBlocks` | 5,376,000 (28 d) | 5,376,000 | SDK: 28 d |
 | `sequencerInboxMaxTimeVariation` | delay 768,000 blk / 345,600 s; future 8,000 blk / 3,600 s | same | SDK: 4 d / 1 h |
-| `baseStake` | 0.01 WBNB | 1 WBNB | permissioned validators |
+| `baseStake` | 0.01 WBNB | **0.02 WBNB** (Beta; `BOLD_BASE_STAKE` override) | permissioned validators → liveness bond, raise with `increaseBaseStake` |
 | `miniStakeValues` | [0, 1, 1] | same | SDK default |
 | `wasmModuleRoot` | consensus-v61 | same | |
 | `maxDataSize` | 117,964 | same | L1-parent value |
@@ -122,7 +123,7 @@ Key choices (all key names checked against the [CLI flags reference](https://doc
 - `node.dangerous.disable-blob-reader: true`, `node.batch-poster.post-4844-blobs: false` — BSC has no EIP-4844 blob *reading* for Nitro batches (BEP-657 limits blob txs anyway).
 - Batch poster: `max-calldata-batch-size 100000`, `max-delay 2m/1m`, `poll-interval 10s/5s`, `l1-block-bound: latest`; data poster `min-tip-cap-gwei 0.1 (testnet) / 0.05 (mainnet)` — BSC's price is the *priority fee* (base fee is 0), `max-tip-cap-gwei 5/3`, `target-price-gwei 1`, `wait-for-l1-finality: true` (BSC finality ≈ 2 blocks).
 - Delayed sequencer: `use-merge-finality: true` (uses BSC's `finalized` tag), `finalize-distance 20` (fallback).
-- Staker: `enable: true`, `strategy: MakeNodes`, EOA wallet; `node.bold.assertion-posting-interval 15m/1h`; `node.block-validator.enable: true` (in-process JIT validation; the `-stripped` image has the machines).
+- Staker: `enable: true`, `strategy: MakeNodes`, EOA wallet; `node.bold.assertion-posting-interval 15m/1h`; `node.bold.parent-chain-block-time 450ms` (default 12 s would schedule confirmations 27× too late); `node.bold.state-provider-config.check-batch-finality false` (§7.13); `node.block-validator.enable: true` (in-process JIT validation; the `-stripped` image has the machines).
 - Inbox reader `max-blocks-to-read 2000` — below the 5,000-block `eth_getLogs` range limit of BSC clients (`--rpc.rangelimit` default 5000).
 - HTTP 8547 (`eth,net,web3,arb,txpool,debug`), WS 8548, feed 9642. `execution.caching.archive`: false on testnet, true on mainnet (explorer traces).
 - Secrets are substituted by `node/entrypoint.sh` with `envsubst` restricted to our variables; `SEQUENCER_SENDER_WHITELIST` is appended as a CLI flag only when set (an empty JSON array would block everyone).
@@ -181,6 +182,25 @@ Custom-gas-token chains pay a fixed **0.1248 gas tokens** for the L2 factory ret
 ### 7.11 Preconfirmation receipts and "no public mempool"
 Nitro's sequencer has no mempool to expose (FCFS queue) but does not sign per-tx receipts. The SPEC's signed preconfirmation is a gateway feature (sign `{txHash, seqNo, timestamp}` with `SEQUENCER_PRIVATE_KEY` once the sequencer accepts the tx) — not implemented in this pass; the `node.feed.output` (port 9642) already streams sequenced txs for Phase 3.
 
+### 7.12 `address(100)` is a retired BSC precompile that burns all forwarded gas — nitro-contracts must be patched (found on mainnet, fixed)
+nitro-contracts v3.2.0 detects "am I on an Arbitrum chain?" with `ArbitrumChecker.runningOnArbitrum()`: `address(100).staticcall(abi.encodeWithSelector(ArbSys.arbOSVersion.selector))`, forwarding **all** remaining gas. On Ethereum `0x…64` is an empty account (call returns `ok=true`, empty data → "not Arbitrum"). On BSC `0x…64` is the Beacon-chain-era `tmHeaderValidate` precompile, which since its deprecation fails with the error `"deprecated"` — and the EVM consumes every unit of gas forwarded to a failing precompile (only explicit `REVERT` refunds). The probe therefore burns 63/64 of the caller's gas:
+- `SequencerInbox`, `RollupCore` (→ `RollupAdminLogic`, `RollupUserLogic`) call it in the **constructor** (immutable `hostChainIsArbitrum`): deploying needs ≥ 64 × code-storage gas ≈ 280M > the 16,777,216 cap. Observed: `eth_estimateGas` → "contract creation code storage out of gas" (dataseed/NodeReal) / "gas required exceeds 16777216" (publicnode); the first `deploy:creator` attempt aborted there after Reader4844 + Bridge (0.00008 BNB lost).
+- `RollupEventInbox.rollupInitialized()` / `ERC20RollupEventInbox` call it at **runtime inside `createRollup`**, which would have starved the rest of the 12M-gas tx.
+- The local Hardhat dry run cannot show this (0x64 is empty there); the SDK's own `isRunningOnArbitrum` probe also breaks on BSC (eth_call returns the `deprecated` error instead of empty data) — the BSC port skips the probe (BSC is never Arbitrum).
+
+Fix: `nitro-bsc/patches/ArbitrumChecker.sol` caps the probe at `staticcall{gas: 100_000}` (semantics unchanged on real Arbitrum parents; on BSC it returns `false` after burning ≤ 100k). `scripts/build-nitro-bsc.ts` copies `@arbitrum/nitro-contracts/src`, swaps the library, compiles with the upstream settings and writes the 5 affected artifacts to `nitro-bsc/artifacts-bsc/` (+5 bytes each, all < 24,576 B). Verified: unpatched contracts compile byte-identical to the upstream artifacts; patched SequencerInbox deploys in 4.86M gas. `scripts/lib/deploy-rollup-creator-bsc.ts` is a resumable port of the SDK's `deployRollupCreator` using these artifacts. Consequence: the AGENT CHAIN templates are not the canonical v3.2.0 bytecode — document this in any audit / BscScan verification (source = upstream v3.2.0 + the one-line library change). Any future nitro-contracts upgrade on BSC needs the same patch (grep for `ArbitrumChecker` and `address(100)`).
+
+### 7.13 Nitro thinks BSC has no finality (`header.difficulty != 0`) — BoLD staker and finality tags (found on mainnet, mitigated)
+`util/headerreader.HeaderIndicatesFinalitySupport()` returns true only for PoS Ethereum (`difficulty == 0`) or Arbitrum headers. BSC/Parlia headers carry `difficulty` 1 or 2, so every `LatestFinalizedBlockNr`/`LatestSafeBlockNr` call fails with `block number not supported: finalized block not found` even though the RPC answers `finalized`/`safe` correctly. Effects and mitigations:
+- **BoLD staker** (`check-batch-finality` default true) could never post an assertion and retried in a tight loop (~5 attempts/s, each several RPC calls) → the public RPC rate-limited the node (429) and *everything* else started failing. Mitigation: `node.bold.state-provider-config.check-batch-finality: false` (BSC finality is ~2 blocks and the batch poster already waits for `finalized` nonces). First assertion posted 3 min after the change.
+- **Delayed sequencer**: `use-merge-finality` silently falls back to `finalize-distance` (20 blocks ≈ 9 s) — acceptable.
+- **L2 `finalized`/`safe` block tags** are not served (`eth_getBlockByNumber("finalized")` errors on the L2); explorers/indexers must use `latest`.
+- Direct RPC `finalized` tag users (data poster nonce, BoLD `rpc-block-number`) are fine because they bypass the header reader.
+- Permanent fix needs a Nitro change (parent-chain finality override) — worth an upstream issue.
+
+### 7.14 Public BSC RPCs for the node — measured
+`bsc-rpc.publicnode.com`: `eth_getLogs` OK, `finalized` 12/12, 30 parallel calls OK, no key; occasional `403 Archive requests require a personal token` for old blocks (watch after the chain has history). NodeReal free key: per-second cap hit immediately under the §7.13 retry storm. `bsc.drpc.org` public: rate-limited at ~10 req/s; `1rpc.io`: `eth_getLogs` ≤ 50 blocks; `blastapi` public: logs rate-limited; `rpc-bsc.48.club`: OK on all probes (fallback candidate); `bsc-dataseed*`: no `eth_getLogs`. Also: the chain-sdk's viem flow silently exited mid-deploy twice on Windows (no error, exit 0) — the BSC port uses its own receipt polling with a keep-alive timer and checkpoints every tx.
+
 ---
 
 ## 8. Agent ID gate (sequencer-side)
@@ -218,7 +238,7 @@ Chosen design:
 | "Sequencer signs a preconfirmation receipt" | Not in Nitro; gateway feature to add (§7.11). |
 | "BoLD fraud proofs, permissioned validators" | Met (nitro-contracts v3.2, `MakeNodes`, 1 validator). |
 | "Fees quoted in USD, settled in ANTB; keeper every 5 min" | `set-l2-params.ts` implements the floor formula; the periodic keeper is a cron to add (same precompile calls). |
-| Genesis Seats in block 0 (mainnet) | Needs `genesis-generator` before mainnet `createRollup` (§3). |
+| Genesis Seats in block 0 (mainnet) | **Not in block 0**: mainnet was created 2026-11-20 with an empty genesis (launch decision). Seats / pre-launch Bridge deposits have to be credited by chain-owner distribution txs on L2 (or a future re-genesis). |
 | nvdachain as proof BSC works | Incorrect premise (it is an L3 on Robinhood Chain); feasibility is established by §2 instead. |
 | Custom domain `rpc.agent-chain.agency` | SPEC maps it to the devnet RPC today; the gateway should take it over when testnet goes live (`fly certs add`). |
 

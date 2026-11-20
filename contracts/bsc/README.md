@@ -77,7 +77,7 @@ that can change and is not promised by this contract.
 | `perAddressCap()` / `globalCap()` / `totalDeposited()` / `totalWithdrawn()` / `depositedBy(a)` / `depositCount()` / `inbox()` / `antb()` | view | |
 | `pause()` / `unpause()` | **owner** | stop / resume deposits |
 | `setCaps(perAddress, global)` | **owner** | Constructor defaults 1 ANTB / 500 ANTB; live Genesis Deposit caps 0.1 / 100 |
-| `setInbox(address)` | **owner** | records the future Nitro Inbox; informational only in Beta |
+| `setInbox(address)` | **owner** | records the Nitro Inbox; informational only in Beta. Set 2026-11-20 to the live AGENT CHAIN `ERC20Inbox` `0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6` (tx `0x3f629035…6433`, block 134,653,241; `scripts/set-inbox.ts`) |
 | `withdrawTo(to, amount)` | **owner** | **Beta escrow mechanism** — see below |
 
 ## Owner permissions
@@ -95,8 +95,8 @@ registration or a seat, and nothing lets the owner take ANTB from a user's walle
 | `GenesisSeatClaim` | `setClaimDeadline(uint256)` | owner | close the claim window before genesis is written | only blocks *new* claims; `0` reopens |
 | `Bridge` | `pause()` / `unpause()` | owner | emergency stop for deposits | escrow untouched |
 | `Bridge` | `setCaps(uint256,uint256)` | owner | Constructor defaults 1 ANTB / 500 ANTB; set to 0.1 / 100 for the Genesis Deposit window (SPEC §8) — raised as the chain proves out | only affects future deposits; lowering below current totals simply blocks new deposits |
-| `Bridge` | `setInbox(address)` | owner | placeholder for the real Nitro Inbox | no effect on funds in this version |
-| `Bridge` | `withdrawTo(address,uint256)` | owner | **Beta escrow.** The Nitro Inbox for AGENT CHAIN is not yet live on BSC, so deposits are held in this contract and credited on L2 by the relayer from `Deposited` events. `withdrawTo` is how escrowed ANTB is moved into the real Inbox once it exists, or returned to depositors if Beta is wound down. | Trusted step during Beta, bounded by the escrowed balance (max 500 ANTB under default caps), every call emits `EscrowWithdrawn`. This power disappears when the Inbox replaces this contract. |
+| `Bridge` | `setInbox(address)` | owner | records the real Nitro Inbox (set to `0x09A1…b5b6`, the AGENT CHAIN `ERC20Inbox`) | no effect on funds in this version |
+| `Bridge` | `withdrawTo(address,uint256)` | owner | **Beta escrow.** Deposits are held in this contract and credited 1:1 on AGENT CHAIN by the Beta relayer (`apps/chain/relayer`, status https://agentchain-relayer.fly.dev/status) within minutes, ordered by nonce. `withdrawTo` is how escrowed ANTB is moved into the Nitro `ERC20Inbox` (to back the relayer's L2 credits) or returned to depositors if Beta is wound down. | Trusted step during Beta, bounded by the escrowed balance (max 500 ANTB under default caps), every call emits `EscrowWithdrawn`. This power disappears when the canonical token bridge replaces this contract. |
 
 Mock contracts (`MockAgentId`, `MockERC20`) have **public mint** and are deployed on testnet /
 local only, never on mainnet.
@@ -205,14 +205,16 @@ events, zero non-mint transfers (the token is soulbound, so holders == mints).
 | BSC Testnet (97) | TBA | TBA | TBA | TBA | TBA |
 | BSC Mainnet (56) | [`0x9C5488f9Aa9468B1db3Cc6B71143A8B2Ca810CF0`](https://bscscan.com/address/0x9C5488f9Aa9468B1db3Cc6B71143A8B2Ca810CF0#code) | [`0x3972579dd0128BF0b6778cB3B457ba1d14D1695b`](https://bscscan.com/address/0x3972579dd0128BF0b6778cB3B457ba1d14D1695b#code) | [`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`](https://bscscan.com/address/0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92#code) | — | — |
 
-Mainnet deployed and BscScan-verified 2026-11-20 (solc 0.8.24, optimizer 200, cancun). Owner at launch: deployer EOA `0x0F03F1c68d4105dd97011c15cC61467164583A4C` (to be moved to a multisig; it will never call `renounceOwnership`). Live Bridge caps during the **Genesis Deposit window**: `perAddressCap = 0.1 ANTB`, `globalCap = 100 ANTB` (set via `scripts/open-bridge.ts`); constructor defaults were 1 / 500 and will be restored by `setCaps` when the Nitro chain is live.
+Mainnet deployed and BscScan-verified 2026-11-20 (solc 0.8.24, optimizer 200, cancun). Owner at launch: deployer EOA `0x0F03F1c68d4105dd97011c15cC61467164583A4C` (to be moved to a multisig; it will never call `renounceOwnership`). Live Bridge caps during the **Genesis Deposit window**: `perAddressCap = 0.1 ANTB`, `globalCap = 100 ANTB` (set via `scripts/open-bridge.ts`); constructor defaults were 1 / 500 and will be restored by `setCaps` as the chain proves out.
+
+**AGENT CHAIN mainnet (chain 1119) is live since 2026-11-20.** Deposits are credited 1:1 by the Beta relayer within minutes, ordered by nonce — status at https://agentchain-relayer.fly.dev/status, trust model in `apps/chain/relayer/README.md`. `Bridge.inbox()` = `0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6` (the chain's `ERC20Inbox`; `INBOX=… npx hardhat run scripts/set-inbox.ts --network bsc`, recorded in `deployments/bsc.json#inbox`).
 
 ### Independent audit notes (2026-11-20)
 
 No Critical/High findings; bytecode and verified source match this repo. Disclosed design limits of the Beta escrow:
 
 - `withdrawTo` is unrestricted in destination and has no timelock; there is no user-side `refund()`. Mitigation: multisig owner, UI disclosure, bounded caps.
-- Deposits are accounted by `amount`, not by received balance. ANTB is an upgradeable beacon proxy controlled by its issuer (can pause or compliance-block any address). The genesis relayer MUST check `ANTB.balanceOf(Bridge) + totalWithdrawn == totalDeposited` before crediting, and clip pro-rata if it does not hold.
+- Deposits are accounted by `amount`, not by received balance. ANTB is an upgradeable beacon proxy controlled by its issuer (can pause or compliance-block any address). The relayer checks `ANTB.balanceOf(Bridge) + totalWithdrawn ≥ totalDeposited` before every crediting round and pauses crediting if it does not hold (implemented in `apps/chain/relayer`).
 - `setBab` lets the owner point the BAB slot at any ERC-721, which could widen the gate beyond KYC'd humans. It will only ever be set to `address(0)` or the canonical BAB proxy.
 - `l2Recipient` may be a contract address on BSC; such an address has no code in AGENT CHAIN genesis. The UI warns when the recipient has code.
 - `isAgent(address(0))` reverts rather than returning false; `isAgent` depends on the Agent ID contract not reverting (it is a non-upgradeable contract).

@@ -29,7 +29,7 @@ Deployed 2026-11-20, source-verified on BscScan. Owner: deployer EOA `0x0F03F1c6
 |---|---|---|
 | `AgentRegistryMirror` | [`0x9C5488f9Aa9468B1db3Cc6B71143A8B2Ca810CF0`](https://bscscan.com/address/0x9C5488f9Aa9468B1db3Cc6B71143A8B2Ca810CF0#code) | `register()` — opt-in registry for Agent ID / BAB holders |
 | `GenesisSeatClaim` | [`0x3972579dd0128BF0b6778cB3B457ba1d14D1695b`](https://bscscan.com/address/0x3972579dd0128BF0b6778cB3B457ba1d14D1695b#code) | `claim()` — soulbound ERC-721 `SEAT`, on-chain SVG metadata |
-| `Bridge` | [`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`](https://bscscan.com/address/0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92#code) | `deposit(amount, l2Recipient)` — ANTB escrow, Beta caps, credited 1:1 in block 0 |
+| `Bridge` | [`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`](https://bscscan.com/address/0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92#code) | `deposit(amount, l2Recipient)` — ANTB escrow, Beta caps, credited 1:1 on AGENT CHAIN by the Beta relayer within minutes, ordered by nonce ([status](https://agentchain-relayer.fly.dev/status)) |
 | `$AGENT` token | not launched | will launch on Flap with an ANTB pool |
 
 Credentials checked by all three: Agent ID [`0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`](https://bscscan.com/address/0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F) or BAB [`0x2B09d47D550061f995A3b5C6F0Fd58005215D7c8`](https://bscscan.com/address/0x2B09d47D550061f995A3b5C6F0Fd58005215D7c8).

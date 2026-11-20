@@ -40,3 +40,40 @@ Append-only. Timestamps are UTC. BNB = gasUsed Ã— effectiveGasPrice.
 - 2026-11-20T06:37:01.856Z | deploy:creator complete (started 2026-11-20T06:36:29.828Z) | 26 contracts | gas 73454172 | â‰ˆ 0.003672 BNB | rollupCreator 0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70
 - 2026-11-20T06:38:52.604Z | create:rollup approve ANTB (0.1248 retryable fees) for RollupCreator 0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70 | tx `0x7bc4b467d30c8af4210a9d3816be30c0cce5b085312eb1503e773cd99d8875cc` | block 134648655 | success | gas 54420 | 0.00000272 BNB
 - 2026-11-20T06:38:54.146Z | create:rollup RollupCreator.createRollup (chainId 1119) | tx `0xd99b52c896685fe301f6bac7b6b0c60ff49546c931f1177473fd152959fa115f` | block 134648658 | success | gas 7962857 | 0.00039814 BNB
+- 2026-11-20T06:44:33.073Z | fund validator 0xc33dCf1d3314506B0f4b06E20bEdC7690c53e78F with 0.060002 BNB from chain owner | tx `0xa7dff448f25934d68f4fda7ed93969dee8b81e52cd61727ad74d278ba065832c` | block 134649412 | success | gas 21000 | 0.00000105 BNB
+- 2026-11-20T06:44:34.429Z | validator wraps 0.030000 BNB â†’ WBNB (0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c) for the BoLD stake | tx `0x55b8b9a8f1d9fd5123dd3414f52949092a84483c714c2000afd473408ca0eb34` | block 134649414 | success | gas 45038 | 0.00000225 BNB
+- 2026-11-20T06:46:35.336Z | deposit-native approve 0.05 tokens for ERC20Inbox 0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6 | tx `0x83e303ae2abc98a5464fc20be1a77c1504582d7fec4fc7787f8ad4085b73adc1` | block 134649683 | success | gas 54408 | 0.00000272 BNB
+- 2026-11-20T06:46:36.775Z | deposit-native ERC20Inbox.depositERC20(0.05) from 0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443 | tx `0x8a3e62f0ef0f4414a7a7bd1c0c60a0eac00c9be55330ade21eedc940175ba24a` | block 134649686 | success | gas 174936 | 0.00000875 BNB | 0.05 ANTB bridged to L2
+- 2026-11-20T06:47:58.126Z | L2 set:l2-params ArbOwner.setMinimumL2BaseFee(493366955) | tx `0xafbc5cf9a60521abe5d307ff4ef77e0b9365df480c1cb65291994fd3a20c4821` | L2 block 11 | success | gas 21240 (paid in ANTB on L2)
+- 2026-11-20T06:48:00.557Z | L2 set:l2-params ArbOwner.setL2BaseFee(493366955) | tx `0x8cdc9a1c1ecc1a80d4ff67fbd163166f666e000c6d234ce4a26df57b9b8b01ca` | L2 block 12 | success | gas 21240 (paid in ANTB on L2)
+- 2026-11-20T06:48:31.186Z | L2 set:l2-params ArbOwner.setL1PricingRewardRecipient(0xC7b182073535A8aA849b304Caf834f81aD0F253F) | tx `0x9857cf8650bc065ba33e35fb5782fb6c1d393fa6eb56ccfc52cc2e2ea6c49844` | L2 block 14 | success | gas 21432 (paid in ANTB on L2)
+- 2026-11-20T06:48:33.980Z | L2 set:l2-params ArbOwner.setL1PricingRewardRate(391472973) | tx `0xd0ef490764fa9fb7eb7333e00b9f23c5e1df4fc06d2e523e0b589b98a037e815` | L2 block 15 | success | gas 21228 (paid in ANTB on L2)
+- 2026-11-20T06:48:36.871Z | L2 set:l2-params ArbOwner.setL1PricePerUnit(391472973) | tx `0xf4de58310764997f52577e737913b17d5bd3b41efd021cf690057d24039c4f7d` | L2 block 16 | success | gas 21240 (paid in ANTB on L2)
+- 2026-11-20T06:48:39.648Z | L2 set:l2-params ArbOwner.setPerBatchGasCharge(27000) | tx `0xad1a9871479c7f5cdb6e309f8d3b11dc5302f554b109f41ab9a6510a2e3596bc` | L2 block 17 | success | gas 23082 (paid in ANTB on L2)
+- 2026-11-20T06:48:42.355Z | L2 set:l2-params ArbOwner.setInfraFeeAccount(0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443) | tx `0x72b6f924ff15c34ce24353a3f0286ac97609c78b6666d4de4d75396ef0f08aec` | L2 block 18 | success | gas 23298 (paid in ANTB on L2)
+- 2026-11-20T06:40Z | Fly: volume agentchain_data (vol_rkgp9ed539xoqj64, sin, 20 GB) created for agentchain-node; secrets PARENT_CHAIN_RPC_URL / BATCH_POSTER_PRIVATE_KEY / VALIDATOR_PRIVATE_KEY / CHAIN_INFO_JSON imported
+- 2026-11-20T06:43Z | Fly: agentchain-node deployed (machine 286552eec39d58, nitro v3.12.4-960ca0a-stripped); chain 1119 started, genesis assertion validated
+- 2026-11-20T06:43:22Z | node batch poster: first batch (seq 1, msgs 1?9) | tx `0x61d7ae572bffd3a4025783424fd7c99c053fe7c8d470747ec511ddca6fc0a99e` | block 134649259 | success | gas 151998 | 0.00000760 BNB
+- 2026-11-20T06:45Z | Fly: agentchain-gateway deployed (secrets PARENT_CHAIN_RPC_URL=bsc-dataseed, GATEWAY_ALLOWLIST=owner,poster,validator; CHAIN_ID=1119), scaled to 1 machine; https://agentchain-gateway.fly.dev/health ok
+- 2026-11-20T06:52Z | node: switched PARENT_CHAIN_RPC_URL to NodeReal (rate-limited within 60 s) and back to https://bsc-rpc.publicnode.com; root cause of the request storm = BoLD staker finality loop (RESEARCH §7.13)
+- 2026-11-20T06:56Z | Fly: agentchain-node redeployed with node.bold.state-provider-config.check-batch-finality=false (and 07:00Z with node.bold.parent-chain-block-time=450ms)
+- 2026-11-20T06:56:23Z | node BoLD staker: first assertion 0x86d70e2f… posted (validator staked 0.02 WBNB) | tx `0xb323ec5660654ae6927bed91b272787cdff2e7ad3706a8ea0f33d3bdabc41750` | block 134650995 | success | gas 306635 | 0.00001533 BNB
+- 2026-11-20T06:48Z | L2 smoke test: ALL PASS (13 checks); chain-owner self-transfer via gateway | L2 tx `0xe81dadc060520bba450861b96843f389102b787cf431b18090616faf2a2a8e99` | L2 block 19 | 22409 gas × 493366955 wei = 0.000011 ANTB
+
+## Totals (2026-11-20 07:05 UTC)
+
+| Wallet | Before | After | Spent / moved |
+|---|---|---|---|
+| BSC contracts deployer `0x0F03…583A4C` | 0.149789 BNB | 0.009786 BNB | 0.14 BNB ? roles, 0.000003 BNB fees |
+| Chain owner `0x8D61…A443` | 0 BNB, 0 ANTB ? +0.09 (fund-roles) +0.40 BNB (user top-up) | 0.385807 BNB, 0.074679 ANTB | 0.04 BNB swapped to 0.2495 ANTB (user); 0.06 BNB ? validator; **˜ 0.00419 BNB gas** (pricer 234,888 + factory set 73.45M + orphaned attempt-1 contracts 1.57M + createRollup 7.96M + approvals/deposit ˜ 83.4M gas at 0.05 gwei); **0.1248 ANTB** retryable fees + **0.05 ANTB** bridged to L2 (0.0501 ANTB on L2, 0.000011 spent in smoke/params txs) |
+| Batch poster `0xC7b1…253F` | 0 ? 0.03 BNB | 0.029969 BNB | 0.000031 BNB (4 batches) |
+| Validator `0xc33d…e78F` | 0 ? 0.02 + 0.06 BNB | 0.049980 BNB + 0.01 WBNB + 0.02 WBNB staked in Rollup | 0.03 BNB wrapped; 0.00002 BNB gas (approve + assertion) |
+
+Total BNB burned as gas across all wallets: **˜ 0.00425 BNB (˜ $2.4)**. Total ANTB consumed: **0.1248 ANTB** (retryables, ˜ $11.4); 0.05 ANTB moved to L2 (still owned).
+- 2026-11-20T07:12:39.0916840Z | buy-antb: chain owner swapped 0.1 BNB ? 0.625037 ANTB (PancakeSwap V3 WBNB?USDT?ANTB) | tx `0x559f1e1308aa5034a426c074d10ca2d7e8827f25483688a23a1622e643037961` | success | gas 242847 | 0.00001214 BNB + 0.1 BNB swapped
+- 2026-11-20T07:12:46.083Z | deposit-native approve 0.6 tokens for ERC20Inbox 0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6 | tx `0x6f431ab97498c2ba7c3df3c115216daf781432372adaad1976cc03d55feb5a6d` | block 134653173 | success | gas 54420 | 0.00000272 BNB
+- 2026-11-20T07:12:47.514Z | deposit-native ERC20Inbox.depositERC20(0.6) from 0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443 | tx `0x9b76478fbadd1d5ad35a27e97e12deabca75f6ee7df74dc8e343a4bc2a53d897` | block 134653176 | success | gas 174948 | 0.00000875 BNB | 0.6 ANTB bridged to L2
+- 2026-11-20T07:12Z | deposit-native approve 0.6 ANTB for ERC20Inbox | tx `0x6f431ab97498c2ba7c3df3c115216daf781432372adaad1976cc03d55feb5a6d` | success
+- 2026-11-20T07:12Z | deposit-native ERC20Inbox.depositERC20(0.6) chain owner ? L2 (owner L2 balance now 0.650090 ANTB, relayer float) | tx `0x9b76478fbadd1d5ad35a27e97e12deabca75f6ee7df74dc8e343a4bc2a53d897` | success
+- 2026-11-20T07:13:14Z | contracts/bsc Bridge.setInbox(0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6) from deployer 0x0F03…583A4C | tx `0x3f629035561f64efaf141d5cee30c47048bd004ed0e5137f683ef13684a16433` | block 134653241 | success | gas 47864 | 0.00000239 BNB
+- 2026-11-20T07:14Z | Fly: agentchain-relayer deployed (machine 1850d7ea622758, volume relayer_data vol_vz862znwxoenkzqv 1 GB, --ha=false); https://agentchain-relayer.fly.dev/status ? cursor = BSC head - 20, 0 processed, 0 pending

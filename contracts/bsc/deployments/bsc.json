@@ -35,5 +35,12 @@
     "antb": "0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53",
     "perAddressCap": "1000000000000000000",
     "globalCap": "500000000000000000000"
+  },
+  "inbox": {
+    "address": "0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6",
+    "tx": "0x3f629035561f64efaf141d5cee30c47048bd004ed0e5137f683ef13684a16433",
+    "block": 134653241,
+    "setAt": "2026-11-20T07:13:14.000Z",
+    "note": "AGENT CHAIN ERC20Inbox on BSC (chain 1119). Informational in Beta: deposits are credited by the relayer (apps/chain/relayer)."
   }
 }

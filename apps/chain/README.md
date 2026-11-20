@@ -4,6 +4,8 @@ Deploys and runs the real AGENT CHAIN rollup: Nitro v3.12.4 / ArbOS 61, nitro-co
 
 Read [`RESEARCH.md`](./RESEARCH.md) first for versions, costs and risks. Chain facts come from [`../../SPEC.md`](../../SPEC.md).
 
+> **Mainnet is live (2026-11-20).** Chain ID 1119 on BSC 56, RollupCreator `0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70`, Rollup `0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85`, public RPC `https://agentchain-gateway.fly.dev`. Every address and tx is in [`deployments/mainnet/`](./deployments/mainnet/) (`creator.json`, `rollup.json`, `chain-info.json`, `LAUNCH-LOG.md`). Two BSC-specific findings changed the procedure after the dry run — see RESEARCH §7.12 (nitro-contracts must be rebuilt with `nitro-bsc/`) and §7.13 (Nitro treats BSC as a chain without finality).
+
 ```
 apps/chain/
   RESEARCH.md                 findings, procedure, costs, risks, Agent ID gate design
@@ -16,16 +18,21 @@ apps/chain/
     node-config.{testnet,mainnet}.json     Nitro node config templates (${VARS} filled by node/entrypoint.sh)
   scripts/
     generate-keys.ts          4 key pairs → .env (private) + keys/ADDRESSES.md (public)
+    fund-roles.ts             mainnet: BNB from the BSC contracts deployer wallet → chain owner / batch poster / validator
+    fund-validator-stake.ts   mainnet: top up the validator from the chain owner and wrap BNB → WBNB (BoLD stake)
+    build-nitro-bsc.ts        recompile the 5 nitro-contracts that embed ArbitrumChecker with the BSC gas-cap patch
     deploy-tantb.ts           testnet gas token
     deploy-pricer.ts          fee-token pricer (ANTB per BNB)
-    deploy-creator.ts         nitro-contracts v3.2.0 factory set + RollupCreator on BSC (27 txs)
-    create-rollup.ts          RollupCreator.createRollup (custom gas token, BoLD, explicit 12M gas limit)
+    deploy-creator.ts         nitro-contracts v3.2.0 factory set + RollupCreator on BSC (26 deploys, resumable)
+    create-rollup.ts          RollupCreator.createRollup (custom gas token, BoLD, explicit 12M gas limit, eth_call pre-flight)
     write-chain-info.ts       chain-info.json + node config for the node
     deposit-native.ts         bridge (t)ANTB BSC → L2 through ERC20Inbox
     set-l2-params.ts          ArbOwner: min base fee (SPEC §3), L1 pricing reward, fee accounts
     smoke-test.ts             post-launch checks (parent, L2, gateway)
-    lib/                      env, networks, params (BSC block-time scaling), clients, precompile ABIs
-  deployments/<network>/      tokens.json, creator.json, rollup.json, chain-info.json (committed for testnet/mainnet)
+    lib/                      env, networks, params (BSC block-time scaling), clients, precompile ABIs,
+                              deploy-rollup-creator-bsc (resumable factory deploy), launch-log (LAUNCH-LOG.md writer)
+  nitro-bsc/                  patches/ArbitrumChecker.sol + hardhat.config.ts (upstream solc settings) + artifacts-bsc/ (committed)
+  deployments/<network>/      tokens.json, creator.json (+ creator.progress.json), rollup.json, chain-info.json, LAUNCH-LOG.md
   keys/ADDRESSES.md           public addresses to fund (no secrets)
   Dockerfile, fly.toml        Nitro node (app agentchain-node, private, volume at /home/user/.arbitrum)
   node/entrypoint.sh          renders node config from Fly secrets, starts nitro
@@ -48,6 +55,7 @@ npm install
 npm run hardhat:compile          # compiles contracts/ → artifacts/
 npm run typecheck                # tsc --noEmit over scripts/
 cd gateway; npm install; npm run typecheck; cd ..
+npm run build:nitro-bsc          # only if nitro-bsc/artifacts-bsc/*.json is missing or the patch changed (RESEARCH §7.12)
 ```
 
 Optional full local dry run (what was validated on 2026-11-20): start `npm run hardhat:node` in another terminal, then run steps 3–7 below with `NETWORK=local` and `DEPLOYER_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` (Hardhat account #0). Outputs go to `deployments/local/` (gitignored).
@@ -83,7 +91,15 @@ Testnet (BSC Testnet 97, faucet https://www.bnbchain.org/en/testnet-faucet):
 Mainnet (BSC 56):
 - Chain owner: ≥ 0.15 BNB **and** ≥ 0.2 ANTB (`0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`; 0.1248 ANTB is consumed by `createRollup` retryables).
 - Batch poster: ≥ 0.1 BNB (top up monthly; see RESEARCH §4).
-- Validator: ≥ 0.05 BNB **and** 1.1 WBNB (`0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c`).
+- Validator: ≥ 0.05 BNB **and** ≥ 0.03 WBNB (`0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c`) — BoLD base stake is **0.02 WBNB** for the Beta (§6); the extra 0.01 covers mini-stakes.
+
+Helpers (mainnet only; every tx is appended to `deployments/mainnet/LAUNCH-LOG.md`):
+```powershell
+npx tsx scripts/fund-roles.ts --dry-run        # 0.09 / 0.03 / 0.02 BNB from the BSC contracts deployer (contracts/bsc/.env); idempotent
+npx tsx scripts/fund-roles.ts
+npx tsx scripts/fund-validator-stake.ts        # tops the validator up from the chain owner and wraps 0.03 BNB → WBNB (deposit())
+```
+Do not use the chain-owner key from a wallet app while the scripts run — a concurrent tx takes the next nonce and the factory deploy keeps going with the wrong contract order (this happened once on 2026-11-20; see LAUNCH-LOG).
 
 Set in `.env`: `NETWORK=testnet` (or `mainnet`), `PARENT_CHAIN_RPC_TESTNET` / `PARENT_CHAIN_RPC_MAINNET` (dedicated endpoint recommended), `BNB_USD_PRICE`, `ANTB_USD_PRICE`.
 
@@ -105,19 +121,23 @@ Mandatory for a custom-gas-token *rollup*; owner may call `setExchangeRate(uint2
 ## 5. Deploy the RollupCreator factory set to BSC
 
 ```powershell
-npm run deploy:creator            # 27 txs, ≈ 73M gas → deployments/testnet/creator.json
+npm run deploy:creator            # 26 deploys, ≈ 73.5M gas → deployments/<network>/creator.json (mainnet: 0.00367 BNB at 0.05 gwei)
 ```
-Deploys Reader4844, 12 bridge templates, BridgeCreator, OSP ×4 + OneStepProofEntry, EdgeChallengeManager, RollupAdmin/UserLogic, UpgradeExecutor, ValidatorWalletCreator, DeployHelper, RollupCreator — nitro-contracts **v3.2.0**, `maxDataSize = 117964`. Idempotent (`--force` to redeploy). Commit `deployments/<network>/creator.json`.
+Deploys Reader4844, 12 bridge templates, BridgeCreator, OSP ×4 + OneStepProofEntry, EdgeChallengeManager, RollupAdmin/UserLogic, UpgradeExecutor, ValidatorWalletCreator, DeployHelper, RollupCreator — nitro-contracts **v3.2.0**, `maxDataSize = 117964`.
+
+**BSC requires a patched build of five contracts** (`SequencerInbox`, `RollupAdminLogic`, `RollupUserLogic`, `RollupEventInbox`, `ERC20RollupEventInbox`): upstream `ArbitrumChecker.runningOnArbitrum()` forwards all gas to `address(100)`, which on BSC is a retired precompile that burns every unit it receives, so the stock bytecode cannot be deployed under the 16,777,216 gas cap (RESEARCH §7.12). `scripts/lib/deploy-rollup-creator-bsc.ts` deploys the same set in the same order with the artifacts from `nitro-bsc/artifacts-bsc/` (all other contracts are byte-identical to upstream — verified by recompiling with the upstream solc settings) and **checkpoints every deploy in `creator.progress.json`**, so a re-run resumes instead of redeploying. Refuses to run when BSC gas is > 1 gwei. `--force` ignores an existing `creator.json` (but still resumes from the checkpoint; delete `creator.progress.json` for a clean redeploy). Commit `creator.json` and `creator.progress.json`.
 
 ## 6. Create the rollup
 
 ```powershell
 npm run create:rollup -- --dry-run   # prints the full parameter set (timing scaled to 0.45 s BSC blocks)
-npm run create:rollup                # approve 0.1248 (t)ANTB + createRollup (gas limit 12,000,000; BSC caps txs at 16,777,216)
+npm run create:rollup                # approve 0.1248 (t)ANTB + eth_call pre-flight + createRollup (gas limit 12,000,000; BSC caps txs at 16,777,216)
 ```
-Outputs `deployments/<network>/rollup.json` (core contracts: rollup, inbox, sequencerInbox, bridge, outbox, upgradeExecutor, …) and rewrites `config/chain-config.<network>.json` with the exact chain config string that is now on-chain. Commit both.
+Outputs `deployments/<network>/rollup.json` (core contracts: rollup, inbox, sequencerInbox, bridge, outbox, upgradeExecutor, …) and rewrites `config/chain-config.<network>.json` with the exact chain config string that is now on-chain. Commit both. Mainnet: tx `0xd99b52c8…115f`, block 134648658, 7,962,857 gas.
 
 Chain owner = `0x8D61…A443` (EOA, `InitialChainOwner` and rollup owner via UpgradeExecutor). Batch poster and validator are allow-listed by `createRollup`.
+
+**BoLD base stake.** `baseStake` is **0.02 WBNB on mainnet** (0.01 on testnet), set in `scripts/lib/params.ts` (`BOLD_BASE_STAKE_DEFAULT_MAINNET`) and overridable with `BOLD_BASE_STAKE=<wbnb>` in `.env`. The original plan said 1 WBNB; the Beta runs with allow-listed validators only, so the stake is a liveness bond, not an anti-griefing deposit, and 0.02 WBNB keeps the validator's working capital small. Raise it later with `RollupAdminLogic.increaseBaseStake` through the UpgradeExecutor when external validators join (`miniStakeValues` stay `[0, 1, 1]` wei).
 
 ## 7. Chain info for the node
 
@@ -131,7 +151,7 @@ The app `agentchain-node` already exists (created for the build check). First de
 
 ```powershell
 cd E:\scash\agent-chain\apps\chain
-fly volumes create agentchain_data --region sin --size 50 -a agentchain-node --yes
+fly volumes create agentchain_data --region sin --size 20 -a agentchain-node --yes   # done for mainnet: vol_rkgp9ed539xoqj64
 
 # secrets (values from .env / deployments; CHAIN_INFO_JSON is printed by write:chain-info)
 fly secrets set -a agentchain-node `
@@ -147,7 +167,12 @@ fly logs -a agentchain-node                          # expect: "entrypoint: star
 fly proxy 8547 -a agentchain-node                    # local tunnel to the raw RPC for debugging / scripts (L2_RPC_URL=http://127.0.0.1:8547)
 ```
 
-For mainnet, edit `fly.toml` `[env]` → `NETWORK = "mainnet"`, `CHAIN_NAME = "AGENT CHAIN"` (or use a second app `agentchain-node-mainnet` with its own volume) and repeat with mainnet secrets. The node has **no public service**; health checks are TCP/HTTP on 8547 inside Fly.
+`fly.toml` is set to **mainnet** (`NETWORK = "mainnet"`, `CHAIN_NAME = "AGENT CHAIN"`, 20 GB volume `vol_rkgp9ed539xoqj64` in `sin`); for a testnet node use a second app with its own `fly.toml`. The node has **no public service**; health checks are TCP/HTTP on 8547 inside Fly.
+
+Mainnet notes (2026-11-20):
+- Secrets were set with `fly secrets import` from a temp `KEY=VALUE` file (avoids PowerShell quoting of the JSON); `PARENT_CHAIN_RPC_URL=https://bsc-rpc.publicnode.com` — it serves `eth_getLogs`, `finalized`/`safe` and 30 parallel calls without errors; the NodeReal key from `contracts/bsc/scripts/snapshot.ts` hit its per-second cap within a minute and the `bsc-dataseed` hosts reject `eth_getLogs` ("limit exceeded"). publicnode occasionally answers `403 Archive requests require a personal token` for old blocks — harmless so far, but move to a paid endpoint before the chain has history.
+- `config/node-config.*.json` sets `node.bold.state-provider-config.check-batch-finality = false` and `node.bold.parent-chain-block-time = 450ms`. Without the first, the BoLD staker never posts (Nitro decides from `header.difficulty != 0` that BSC has no finality and `GetFinalizedMsgCount` fails forever — it also retried in a tight loop that produced hundreds of RPC calls per second and got the endpoint rate-limited); without the second it schedules confirmations assuming 12 s blocks (4,479 h instead of 7 d). RESEARCH §7.13.
+- First assertion: `0xb323ec56…1750` (block 134650995, validator staked 0.02 WBNB). Batches post every ≤ 1 min while there is traffic; the first batch is `0x61d7ae57…a99e`.
 
 Volume snapshots: `fly volumes snapshots list <vol-id>`; Fly takes daily snapshots by default.
 
@@ -163,9 +188,9 @@ fly deploy --remote-only -a agentchain-gateway
 curl https://agentchain-gateway.fly.dev/health
 curl -s -X POST https://agentchain-gateway.fly.dev -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
 ```
-`fly.toml` points `SEQUENCER_RPC_URL` at `http://agentchain-node.internal:8547` (Fly private network) and `CHAIN_ID=111900`. On testnet, where there is no Agent ID collection, either set `AGENT_ID_NFT_ADDRESS` to a mock ERC-721 on BSC Testnet or rely on `AGENT_REGISTRY_ADDRESS`; `GATEWAY_ENFORCE=false` switches to observe-only.
+`fly.toml` points `SEQUENCER_RPC_URL` at `http://agentchain-node.internal:8547` (Fly private network) and `CHAIN_ID=1119` (mainnet). On testnet, where there is no Agent ID collection, either set `AGENT_ID_NFT_ADDRESS` to a mock ERC-721 on BSC Testnet or rely on `AGENT_REGISTRY_ADDRESS`; `GATEWAY_ENFORCE=false` switches to observe-only. Mainnet gateway secrets as of launch: `PARENT_CHAIN_RPC_URL=https://bsc-dataseed.bnbchain.org`, `GATEWAY_ALLOWLIST` = chain owner, batch poster, validator; `AGENT_REGISTRY_ADDRESS` unset (no L2 registry yet → parent-chain Agent ID check only). Scaled to 1 machine (`fly scale count 1`).
 
-Later: `fly certs add rpc.agent-chain.agency -a agentchain-gateway`.
+Custom domain: add a DNS record **`mainnet-rpc.agent-chain.agency CNAME agentchain-gateway.fly.dev`**, then `fly certs add mainnet-rpc.agent-chain.agency -a agentchain-gateway` (Fly issues the certificate once the CNAME resolves). Until then the canonical URL is `https://agentchain-gateway.fly.dev`.
 
 ## 10. Bridge gas to the chain owner and set L2 parameters
 
@@ -176,7 +201,7 @@ npx tsx scripts/deposit-native.ts 2              # approve + ERC20Inbox.depositE
 npm run set:l2-params -- --dry-run
 npm run set:l2-params
 ```
-Sets (only when different): `setMinimumL2BaseFee` + `setL2BaseFee` = `0.045e-6 USD/gas ÷ ANTB_USD` (463,105,382 wei at $97.17), `setL1PricingRewardRecipient`, `setL1PricingRewardRate` (≈ 3.6e8 ANTB-wei/unit at 0.05 gwei, $565/$97.17), `setL1PricePerUnit`, `setPerBatchGasCharge(27000)`, `setNetworkFeeAccount`/`setInfraFeeAccount`, speed limit 7M gas/s, max tx gas 32M. Re-run whenever `ANTB_USD_PRICE`/`BNB_USD_PRICE` change (the fee keeper will automate this).
+Sets (only when different): `setMinimumL2BaseFee` + `setL2BaseFee` = `0.045e-6 USD/gas ÷ ANTB_USD` (463,105,382 wei at $97.17), `setL1PricingRewardRecipient`, `setL1PricingRewardRate` (≈ 3.6e8 ANTB-wei/unit at 0.05 gwei, $565/$97.17), `setL1PricePerUnit`, `setPerBatchGasCharge(27000)`, `setNetworkFeeAccount`/`setInfraFeeAccount`, speed limit 7M gas/s, max tx gas 32M. Re-run whenever `ANTB_USD_PRICE`/`BNB_USD_PRICE` change (the fee keeper will automate this). Mainnet launch values (DexScreener 2026-11-20: ANTB $91.21, BNB $571.3): min base fee **493,366,955 wei**, L1 reward rate **391,472,973 ANTB-wei/unit** → batch poster `0xC7b1…253F`, network/infra fee account = chain owner. The script re-reads the L2 gas price before every call (the first setter moves the base fee immediately).
 
 ## 11. Smoke test
 
@@ -184,7 +209,7 @@ Sets (only when different): `setMinimumL2BaseFee` + `setL2BaseFee` = `0.045e-6 U
 # .env: L2_RPC_URL (raw, via fly proxy) and GATEWAY_URL=https://agentchain-gateway.fly.dev
 npm run smoke
 ```
-Checks: parent chainId, `SequencerInbox.batchCount > 0`, batch poster allow-listed, L2 chainId/ArbOS, head advancing, `eth_gasPrice ≥` floor, gateway forwards `eth_chainId` with CORS `*`, rejects a random sender with `-32050`, `/health` 200.
+Checks: parent chainId, `SequencerInbox.batchCount > 0`, batch poster allow-listed, L2 chainId/ArbOS, head advancing, `eth_gasPrice ≥` floor, gateway forwards `eth_chainId` with CORS `*`, rejects a random sender with `-32050`, `/health` 200, and (when `CHAIN_OWNER_PRIVATE_KEY` is set) a gas-paying self-transfer from the chain owner is accepted by the gateway and mined (gas limit from `eth_estimateGas` — Nitro's intrinsic gas includes the parent-chain calldata component, so 21,000 is "intrinsic gas too low"). Mainnet 2026-11-20: ALL PASS (13 checks; owner tx `0xe81dadc0…8e99`, L2 block 19, 22,409 gas × 493,366,955 wei = 0.000011 ANTB).
 
 ---
 
@@ -200,9 +225,10 @@ Checks: parent chainId, `SequencerInbox.batchCount > 0`, batch poster allow-list
 | Add a chain owner (multisig later) | `cast send 0x70 "addChainOwner(address)" <addr> --private-key $CHAIN_OWNER` on L2 |
 | Rotate gateway allowlist | `fly secrets set -a agentchain-gateway GATEWAY_ALLOWLIST=…` |
 
-## Mainnet checklist (before `create:rollup` with `NETWORK=mainnet`)
-1. Genesis snapshot of Agent ID holders → `genesis-generator` → set `genesisAssertionState` in `create-rollup.ts` (RESEARCH §3).
-2. Chain owner moved to a multisig (deploy a Safe on BSC + L2, `addChainOwner`, `removeChainOwner`).
-3. Validator on a second machine (watchtower first), feed relay, alerting on batch poster BNB and `batchCount`.
-4. AEP reporting process (10 % net revenue to the Arbitrum Foundation, manual transfer for non-Ethereum parents).
-5. Bridge caps per SPEC Beta (1 ANTB/address, 500 ANTB total) enforced in the BSC-side `Bridge`/deposit UI.
+## Mainnet checklist — status after the 2026-11-20 launch
+1. **Not done (deliberate):** genesis snapshot of Agent ID holders → `genesis-generator` → `genesisAssertionState`. The chain launched with an empty genesis; Genesis Seats / pre-launch `Bridge` deposits (SPEC §8) must be credited by an L2 distribution tx from the chain owner (or a future chain re-genesis) instead of block 0.
+2. **Open:** chain owner is still the EOA `0x8D61…A443` (also network/infra fee account). Move to a Safe on BSC + L2 (`addChainOwner`, `removeChainOwner`, transfer UpgradeExecutor admin).
+3. **Open:** single Fly machine runs sequencer + batch poster + validator. Add a second validator (watchtower), a feed relay, alerts on batch poster BNB (`≥ 0.1`) and `batchCount`.
+4. **Open:** AEP reporting (10 % net revenue to the Arbitrum Foundation, manual transfer for non-Ethereum parents).
+5. **Open:** raise the BSC `Bridge` caps to 1 ANTB / 500 ANTB (`setCaps`) and wire deposits to `ERC20Inbox.depositERC20` / the L2 distribution.
+6. **Open:** `rpc-block-number` for BoLD stays `finalized` (served by publicnode); the delayed sequencer falls back to `finalize-distance 20` because Nitro ignores BSC finality (§7.13). Revisit if BSC adds a PoS-style `difficulty = 0` header or Nitro adds a parent-chain finality override.
