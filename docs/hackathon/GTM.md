@@ -47,7 +47,7 @@ Conversion assumptions: 3,000 impressions → 300 site visits → 120 Agent ID h
 | `$AGENT` launch on Flap (ANTB pool) | team | **done D0 (Nov 20)** — `0x8E3318Ef4411b4488429Ff6970602968D7307777` |
 | Submission form + video | team (`<HUMAN>`) | D18 (Dec 8) |
 
-If Bridge / $AGENT slip, the submission still stands on Mirror + SeatClaim; the 30-address floor should be met by D9 from seats alone.
+Status 2026-11-20: Bridge, Mainnet Beta (chain 1119) and $AGENT all shipped on D0. Genesis Seats were claimed by dozens of real Agent IDs in the first hours (live count on the site — always quote the live `totalSeats()` number, never a devnet figure).
 
 ## 3. Day-by-day plan
 

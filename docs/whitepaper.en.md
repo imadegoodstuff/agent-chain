@@ -387,7 +387,7 @@ Batches are posted to BSC, whose **fast finality (1.5–4 s)** means posted data
 | Launch gate | None — open launch. Any wallet can buy, hold and trade $AGENT on BSC |
 | Per-wallet cap | None |
 | Tax | 1% buy / 1% sell for 365 days; 100% of tax to the creator treasury wallet `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`; no dividends, no burn |
-| Creator first buy | 0.6 ANTB → 15,060,562.91 AGENT (≈1.5% of supply), disclosed |
+| Creator first buy | 0.6 ANTB → 15,060,562.91 AGENT (≈1.5% of supply), **burned in full** to `0x000000000000000000000000000000000000dEaD` (tx `0x0b5a7bc2bde943b5d615bcb6a139800465133b3912ef7aa14eb150b40382e68c`) — team holds 0 $AGENT |
 | Agent ID | Required to transact on AGENT CHAIN, not to hold $AGENT. Bridging $AGENT to the chain requires an Agent ID account |
 | Team swap fee | None |
 | Links | [Flap](https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777) · [BscScan](https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777) · DexScreener after migration |

@@ -106,19 +106,35 @@ export function TokenLiveCard({ compact = false }: { compact?: boolean }) {
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4">
+      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div className="min-w-0">
           <div className="label">{L("Price", "价格")}</div>
-          <div className="num mt-1 break-words font-mono text-2xl text-bone">{price !== null ? `${tinyAntb(price)} ANTB` : "—"}</div>
-          <div className="mt-1 font-mono text-[11px] text-muted">
-            {priceUsd !== null ? `≈ $${priceUsd.toFixed(8)} · ANTB ${p.live ? p.source : "IPO close"}` : L("per AGENT · from Flap Portal", "每 AGENT · 来自 Flap Portal")}
-          </div>
+          {migrated ? (
+            <>
+              <div className="mt-1 font-mono text-lg text-bone">{L("see DexScreener", "见 DexScreener")}</div>
+              <div className="mt-1 font-mono text-[11px] text-muted">{L("curve closed · price now set by the PancakeSwap V2 pool", "曲线已关闭 · 价格由 PancakeSwap V2 池决定")}</div>
+            </>
+          ) : (
+            <>
+              <div className="num mt-1 break-words font-mono text-2xl text-bone">{price !== null ? `${tinyAntb(price)} ANTB` : "—"}</div>
+              <div className="mt-1 font-mono text-[11px] text-muted">
+                {priceUsd !== null ? `≈ $${priceUsd.toFixed(8)} · ANTB ${p.live ? p.source : "IPO close"}` : L("per AGENT · from Flap Portal", "每 AGENT · 来自 Flap Portal")}
+              </div>
+            </>
+          )}
         </div>
         <div className="min-w-0">
-          <div className="label">{L("Curve reserve", "曲线储备")}</div>
+          <div className="label">{migrated ? L("Final curve reserve", "曲线最终储备") : L("Curve reserve", "曲线储备")}</div>
           <div className="num mt-1 break-words font-mono text-2xl text-bone">{t?.reserveWei ? `${fmtWei(t.reserveWei, 2)} ANTB` : "—"}</div>
           <div className="mt-1 font-mono text-[11px] text-muted">
             {circ !== null ? `${fmtWei(circ, 0)} / ${fmtInt(AGENT_TOKEN.totalSupply)} AGENT ${L("sold", "已售出")}` : L("quote held by the bonding curve", "联合曲线持有的报价代币")}
+          </div>
+        </div>
+        <div className="min-w-0 col-span-2 sm:col-span-1">
+          <div className="label">{L("Burned", "已销毁")}</div>
+          <div className="num mt-1 break-words font-mono text-2xl text-bone">{t?.burnedWei ? `${fmtWei(t.burnedWei, 0)}` : "—"}</div>
+          <div className="mt-1 font-mono text-[11px] text-muted">
+            AGENT · balanceOf(0x…dEaD){t?.burnedWei && t.totalSupplyWei ? ` · ${((Number(BigInt(t.burnedWei) / 10n ** 12n) / Number(BigInt(t.totalSupplyWei) / 10n ** 12n)) * 100).toFixed(2)}%` : ""}
           </div>
         </div>
       </div>
@@ -180,15 +196,24 @@ export function TokenLiveCard({ compact = false }: { compact?: boolean }) {
           <li className="flex gap-2">
             <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
             <span>
-              {L("Creator first buy at launch: 0.6 ANTB → 15,060,562.91 AGENT (≈1.5% of supply) to the launcher ", "创建者在发行时首购：0.6 ANTB → 15,060,562.91 AGENT（≈ 总量的 1.5%），由发行地址 ")}
-              <a href={bscAddr(AGENT_TOKEN.launcher)} target="_blank" rel="noreferrer" className="font-mono text-amber hover:underline">
-                {shortAddr(AGENT_TOKEN.launcher, 4)}
-              </a>
-              {t?.launcherBalanceWei !== null && t?.launcherBalanceWei !== undefined ? ` (${L("launcher balance now", "发行地址当前余额")} ${fmtWei(t.launcherBalanceWei, 0)} AGENT)` : ""}. {L("Launch tx ", "发行交易 ")}
+              {L(
+                "Creator first buy (0.6 ANTB → 15,060,562.91 AGENT, ≈1.5%) was burned in full — team holds 0 $AGENT. ",
+                "创建者首购（0.6 ANTB → 15,060,562.91 AGENT，≈1.5%）已全部销毁——团队持有 0 $AGENT。",
+              )}
+              {L("Launch tx ", "发行交易 ")}
               <a href={bscTx(AGENT_TOKEN.launchTx)} target="_blank" rel="noreferrer" className="font-mono text-amber hover:underline">
                 {shortAddr(AGENT_TOKEN.launchTx, 4)}
               </a>
-              .
+              {" · "}
+              {L("burn tx ", "销毁交易 ")}
+              <a href={bscTx(AGENT_TOKEN.creatorFirstBuy.burnTx)} target="_blank" rel="noreferrer" className="font-mono text-amber hover:underline">
+                {shortAddr(AGENT_TOKEN.creatorFirstBuy.burnTx, 4)}
+              </a>
+              {" → "}
+              <a href={bscAddr(AGENT_TOKEN.burnAddress)} target="_blank" rel="noreferrer" className="font-mono text-amber hover:underline">
+                0x…dEaD
+              </a>
+              {t?.launcherBalanceWei !== null && t?.launcherBalanceWei !== undefined ? ` · ${L("launcher balance now", "发行地址当前余额")} ${fmtWei(t.launcherBalanceWei, 0)} AGENT` : ""}.
             </span>
           </li>
           <li className="flex gap-2">

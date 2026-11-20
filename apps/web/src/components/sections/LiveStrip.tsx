@@ -163,10 +163,12 @@ export function LiveStrip({ seatsVisible: _seatsVisible }: { seatsVisible: boole
           <Stat
             label="$AGENT · Flap"
             live={!!tk?.ok}
-            value={agentPriceAntb !== null ? `${tiny(agentPriceAntb)} ANTB` : connecting}
+            value={tk?.status === "migrated" ? <span className="text-2xl">{L("on PancakeSwap", "已在 PancakeSwap")}</span> : agentPriceAntb !== null ? `${tiny(agentPriceAntb)} ANTB` : connecting}
             sub={
               tk?.ok
-                ? `${tk.status === "migrated" ? L("migrated to PancakeSwap", "已迁移到 PancakeSwap") : `${L("curve", "曲线")} ${tk.progressPct?.toFixed(1) ?? "—"}%`} · ${agentPriceAntb !== null ? `≈ $${(agentPriceAntb * p.usd).toFixed(7)}` : ""} · ${shortAddr(AGENT_TOKEN.address, 4)}`
+                ? tk.status === "migrated"
+                  ? `${L("curve closed · price on DexScreener", "曲线已关闭 · 价格见 DexScreener")} · ${shortAddr(AGENT_TOKEN.address, 4)}`
+                  : `${L("curve", "曲线")} ${tk.progressPct?.toFixed(1) ?? "—"}% · ${agentPriceAntb !== null ? `≈ $${(agentPriceAntb * p.usd).toFixed(7)}` : ""} · ${shortAddr(AGENT_TOKEN.address, 4)}`
                 : "Portal.getTokenV8Safe()"
             }
             href="/#token"

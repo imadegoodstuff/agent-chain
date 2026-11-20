@@ -62,6 +62,7 @@ export type TokenStats = {
   dexSupplyThreshWei: string | null;
   totalSupplyWei: string | null;
   launcherBalanceWei: string | null;
+  burnedWei: string | null; // balanceOf(0x…dEaD)
   buyTaxBps: number | null;
   sellTaxBps: number | null;
   taxExpiresAt: number | null;

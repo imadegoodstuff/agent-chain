@@ -22,6 +22,7 @@ async function compute(): Promise<TokenStats> {
         contracts: [
           { address: TOKEN, abi: agentErc20Abi, functionName: "totalSupply" },
           { address: TOKEN, abi: agentErc20Abi, functionName: "balanceOf", args: [AGENT_TOKEN.launcher as Address] },
+          { address: TOKEN, abi: agentErc20Abi, functionName: "balanceOf", args: [AGENT_TOKEN.burnAddress as Address] },
           { address: TOKEN, abi: agentErc20Abi, functionName: "buyTaxRate" },
           { address: TOKEN, abi: agentErc20Abi, functionName: "sellTaxRate" },
           { address: TOKEN, abi: agentErc20Abi, functionName: "taxExpirationTime" },
@@ -45,9 +46,10 @@ async function compute(): Promise<TokenStats> {
       dexSupplyThreshWei: state.dexSupplyThresh.toString(),
       totalSupplyWei: v<bigint>(0)?.toString() ?? null,
       launcherBalanceWei: v<bigint>(1)?.toString() ?? null,
-      buyTaxBps: v<number>(2),
-      sellTaxBps: v<number>(3),
-      taxExpiresAt: v<bigint>(4) !== null ? Number(v<bigint>(4)) : null,
+      burnedWei: v<bigint>(2)?.toString() ?? null,
+      buyTaxBps: v<number>(3),
+      sellTaxBps: v<number>(4),
+      taxExpiresAt: v<bigint>(5) !== null ? Number(v<bigint>(5)) : null,
     };
   } catch (e) {
     return {
@@ -64,6 +66,7 @@ async function compute(): Promise<TokenStats> {
       dexSupplyThreshWei: null,
       totalSupplyWei: null,
       launcherBalanceWei: null,
+      burnedWei: null,
       buyTaxBps: null,
       sellTaxBps: null,
       taxExpiresAt: null,
