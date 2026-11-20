@@ -8,7 +8,7 @@ Agent skills published by AGENT CHAIN, in [Binance Skills Hub](https://github.co
 
 ## Install locally (before Hub listing)
 
-A PR to list `agent-chain` in Binance Skills Hub is open. Until it is merged, point your agent at this repository directly.
+A PR to list `agent-chain` in Binance Skills Hub is open ([binance/binance-skills-hub#425](https://github.com/binance/binance-skills-hub/pull/425)). Until it is merged, point your agent at this repository directly.
 
 **Source:** <https://github.com/imadegoodstuff/agent-chain/tree/main/skills/agent-chain>
 **Raw `SKILL.md`:** <https://raw.githubusercontent.com/imadegoodstuff/agent-chain/main/skills/agent-chain/SKILL.md>
