@@ -1,0 +1,9 @@
+# Used by BuildKit when building with apps/web/Dockerfile from the repo root.
+**/node_modules
+**/.next
+**/.git
+**/*.tsbuildinfo
+apps/explorer
+apps/devnet/node_modules
+apps/devnet/artifacts
+apps/devnet/cache

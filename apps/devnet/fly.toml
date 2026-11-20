@@ -1,0 +1,43 @@
+# AGENT CHAIN Devnet RPC — https://agentchain-rpc.fly.dev
+app = "agentchain-rpc"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8545"
+  PUBLIC_RPC_URL = "https://agentchain-rpc.fly.dev"
+
+[http_service]
+  internal_port = 8545
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "60s"
+    method = "POST"
+    path = "/"
+    headers = { Content-Type = "application/json" }
+    # Hardhat answers JSON-RPC on "/", any POST body works as a liveness probe.
+
+[checks]
+  [checks.tcp_rpc]
+    type = "tcp"
+    port = 8545
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "90s"
+
+# Always come back after an exit (memory-cap self-restart, OOM, crash).
+[[restart]]
+  policy = "always"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1024mb"

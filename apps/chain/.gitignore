@@ -1,0 +1,14 @@
+node_modules/
+artifacts/
+cache/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+deployments/local/
+gateway/node_modules/
+gateway/dist/
+nitro-bsc/src/
+nitro-bsc/artifacts/
+nitro-bsc/cache/

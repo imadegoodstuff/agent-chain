@@ -1,0 +1,9 @@
+node_modules
+gateway/node_modules
+artifacts
+cache
+.env
+.env.*
+deployments/local
+keys
+*.md

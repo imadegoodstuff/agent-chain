@@ -1,0 +1,34 @@
+{
+  "name": "@agent-chain/chain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AGENT CHAIN L2: Arbitrum Nitro rollup on BNB Smart Chain with ANTB as gas token. Deployment scripts, Nitro node configs, Fly.io manifests.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "keys:generate": "tsx scripts/generate-keys.ts",
+    "deploy:tantb": "tsx scripts/deploy-tantb.ts",
+    "deploy:creator": "tsx scripts/deploy-creator.ts",
+    "deploy:pricer": "tsx scripts/deploy-pricer.ts",
+    "create:rollup": "tsx scripts/create-rollup.ts",
+    "write:chain-info": "tsx scripts/write-chain-info.ts",
+    "set:l2-params": "tsx scripts/set-l2-params.ts",
+    "smoke": "tsx scripts/smoke-test.ts",
+    "hardhat:node": "hardhat node --port 8545",
+    "hardhat:compile": "hardhat compile"
+  },
+  "dependencies": {
+    "@arbitrum/chain-sdk": "0.28.0",
+    "dotenv": "^16.4.5",
+    "viem": "^1.21.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "hardhat": "^2.22.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,48 @@
+[
+  {
+    "chain-id": 1119,
+    "parent-chain-id": 56,
+    "parent-chain-is-arbitrum": false,
+    "chain-name": "AGENT CHAIN",
+    "chain-config": {
+      "chainId": 1119,
+      "homesteadBlock": 0,
+      "daoForkBlock": null,
+      "daoForkSupport": true,
+      "eip150Block": 0,
+      "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "eip155Block": 0,
+      "eip158Block": 0,
+      "byzantiumBlock": 0,
+      "constantinopleBlock": 0,
+      "petersburgBlock": 0,
+      "istanbulBlock": 0,
+      "muirGlacierBlock": 0,
+      "berlinBlock": 0,
+      "londonBlock": 0,
+      "clique": {
+        "period": 0,
+        "epoch": 0
+      },
+      "arbitrum": {
+        "EnableArbOS": true,
+        "AllowDebugPrecompiles": false,
+        "DataAvailabilityCommittee": false,
+        "InitialArbOSVersion": 61,
+        "InitialChainOwner": "0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443",
+        "GenesisBlockNum": 0,
+        "MaxCodeSize": 24576,
+        "MaxInitCodeSize": 49152
+      }
+    },
+    "rollup": {
+      "bridge": "0x337B50dB3A8b2EF587fd4AB47cF27C2A960b9dFd",
+      "inbox": "0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6",
+      "sequencer-inbox": "0x165108EcA9Fd180328856c0FE518F2BCAb5bd7E8",
+      "rollup": "0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85",
+      "validator-wallet-creator": "0xa140d2f3e09dae95E19E9DfF0Ac3Bd74D3235431",
+      "stake-token": "0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c",
+      "deployed-at": 134648658
+    }
+  }
+]

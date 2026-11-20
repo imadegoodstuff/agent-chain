@@ -1,0 +1,33 @@
+{
+  "name": "@agent-chain/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AGENT CHAIN MCP server: read-only chain tools (head, block, tx, isAgent, fee estimate, genesis stats) over the AGENT CHAIN JSON-RPC + explorer API",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "agentchain-mcp": "dist/stdio.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/stdio.js",
+    "start:http": "node dist/http.js",
+    "smoke": "node dist/smoke.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "viem": "^2.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0"
+  }
+}

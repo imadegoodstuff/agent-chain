@@ -1,0 +1,46 @@
+# AGENT CHAIN Nitro node (sequencer + batch poster + validator)
+# The raw sequencer RPC is PRIVATE: no public service is exposed here. The gateway app reaches it over
+# Fly private networking at http://agentchain-node.internal:8547 (same org). Debug access: `fly proxy 8547 -a agentchain-node`.
+app = "agentchain-node"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # Mainnet launch 2026-11-20 (chain 1119 on BSC 56). For a testnet node use a second app with NETWORK = "testnet".
+  NETWORK = "mainnet"
+  CHAIN_NAME = "AGENT CHAIN"
+  # Secrets (set with `fly secrets set -a agentchain-node ...`):
+  #   PARENT_CHAIN_RPC_URL, CHAIN_INFO_JSON, BATCH_POSTER_PRIVATE_KEY, VALIDATOR_PRIVATE_KEY,
+  #   optional SEQUENCER_SENDER_WHITELIST, NITRO_EXTRA_ARGS
+
+[mounts]
+  source = "agentchain_data"
+  destination = "/home/user/.arbitrum"
+  initial_size = "20gb"   # Beta: 20 GB (fly volumes extend to grow later)
+
+# Liveness: RPC port answering. (No [http_service] — we do not want a public hostname on the sequencer.)
+[checks]
+  [checks.rpc_tcp]
+    type = "tcp"
+    port = 8547
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "180s"
+  [checks.rpc_http]
+    type = "http"
+    port = 8547
+    method = "POST"
+    path = "/"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "180s"
+    headers = { Content-Type = "application/json" }
+
+[[restart]]
+  policy = "always"
+
+[[vm]]
+  size = "shared-cpu-4x"
+  memory = "4096mb"

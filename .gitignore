@@ -1,0 +1,24 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
+# Private keys and API keys live only in per-app .env files. Never commit them.
+**/.env
+**/.env.*
+!**/.env.example
+
+# ── Dependencies / build output ───────────────────────────────────────────────
+**/node_modules
+**/.next
+**/artifacts
+**/cache
+**/dist
+**/*.tsbuildinfo
+**/typechain-types
+**/coverage
+**/coverage.json
+*.log
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Local-only chain state ────────────────────────────────────────────────────
+apps/chain/deployments/local/

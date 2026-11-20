@@ -1,0 +1,44 @@
+# fly.toml — AGENT CHAIN MCP server (HTTP variant)
+# NOT deployed yet. Deploy from this directory with: fly deploy --remote-only
+# Intended public URL after deploy: https://agentchain-mcp.fly.dev/mcp  (later https://mcp.agent-chain.agency/mcp)
+
+app = "agentchain-mcp"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  AGENTCHAIN_RPC_URL = "https://rpc.agent-chain.agency"
+  AGENTCHAIN_EXPLORER_URL = "https://explorer.agent-chain.agency"
+  AGENTCHAIN_CHAIN_ID = "11190"
+  AGENTCHAIN_GAS_SYMBOL = "tANTB"
+  AGENTCHAIN_AGENT_REGISTRY = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+  AGENTCHAIN_GENESIS_SEAT = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  AGENTCHAIN_FEE_KEEPER = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+  BSC_RPC_URL = "https://bsc-dataseed.bnbchain.org"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

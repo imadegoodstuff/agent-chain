@@ -1,0 +1,78 @@
+{
+  "network": "mainnet",
+  "parentChainId": 56,
+  "childChainId": 1119,
+  "chainName": "AGENT CHAIN",
+  "transactionHash": "0xd99b52c896685fe301f6bac7b6b0c60ff49546c931f1177473fd152959fa115f",
+  "deployedAtBlockNumber": 134648658,
+  "chainOwner": "0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443",
+  "batchPosters": [
+    "0xC7b182073535A8aA849b304Caf834f81aD0F253F"
+  ],
+  "validators": [
+    "0xc33dCf1d3314506B0f4b06E20bEdC7690c53e78F"
+  ],
+  "stakeToken": "0xbb4CdB9CBd36B01bD1cBaEbF2De08d9173bc095c",
+  "nativeToken": "0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53",
+  "feeTokenPricer": "0x132fa6bcc47d0dd51e93d6bde0cb8ee4ca8252aa",
+  "wasmModuleRoot": "0xc10cd7ec6acaf1c441a3f6bd0900ad20f15855ba775a96f1939118cbc629dc97",
+  "coreContracts": {
+    "rollup": "0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85",
+    "inbox": "0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6",
+    "nativeToken": "0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53",
+    "outbox": "0x763a4E77d0d0E300dba7527C402947aC86fc6fB3",
+    "rollupEventInbox": "0xf551D9ed486b84fb7f1CD2F1058C329412Fe9974",
+    "challengeManager": "0x1E3256Fd2ACde0086f3B9c688Ea82C9742140179",
+    "adminProxy": "0x35c68D1A4B12BE53AA2C16A4F76b59D912958F18",
+    "sequencerInbox": "0x165108EcA9Fd180328856c0FE518F2BCAb5bd7E8",
+    "bridge": "0x337B50dB3A8b2EF587fd4AB47cF27C2A960b9dFd",
+    "upgradeExecutor": "0x6B338a6b72fcED9306585aC2586664192958EF1B",
+    "validatorWalletCreator": "0xa140d2f3e09dae95E19E9DfF0Ac3Bd74D3235431",
+    "deployedAtBlockNumber": 134648658
+  },
+  "chainConfig": {
+    "chainId": 1119,
+    "homesteadBlock": 0,
+    "daoForkBlock": null,
+    "daoForkSupport": true,
+    "eip150Block": 0,
+    "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
+    "muirGlacierBlock": 0,
+    "berlinBlock": 0,
+    "londonBlock": 0,
+    "clique": {
+      "period": 0,
+      "epoch": 0
+    },
+    "arbitrum": {
+      "EnableArbOS": true,
+      "AllowDebugPrecompiles": false,
+      "DataAvailabilityCommittee": false,
+      "InitialArbOSVersion": 61,
+      "InitialChainOwner": "0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443",
+      "GenesisBlockNum": 0,
+      "MaxCodeSize": 24576,
+      "MaxInitCodeSize": 49152
+    }
+  },
+  "timing": {
+    "confirmPeriodBlocks": "1344000",
+    "challengeGracePeriodBlocks": "384000",
+    "minimumAssertionPeriod": "2000",
+    "validatorAfkBlocks": "5376000",
+    "sequencerInboxMaxTimeVariation": {
+      "delayBlocks": "768000",
+      "futureBlocks": "8000",
+      "delaySeconds": "345600",
+      "futureSeconds": "3600"
+    }
+  },
+  "gasUsed": "7962857",
+  "deployedAt": "2026-11-20T06:38:54.149Z"
+}

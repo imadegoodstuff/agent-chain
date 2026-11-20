@@ -1,0 +1,44 @@
+# AGENT CHAIN public RPC gateway — https://agentchain-gateway.fly.dev (later: https://rpc.agent-chain.agency)
+app = "agentchain-gateway"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  CHAIN_ID = "1119"
+  # Private sequencer over Fly 6PN (same org). Override with a secret if the node app is renamed.
+  SEQUENCER_RPC_URL = "http://agentchain-node.internal:8547"
+  # Binance Agent ID ERC-721 (BSC mainnet). For testnet set AGENT_ID_NFT_ADDRESS to a mock via `fly secrets set`.
+  AGENT_ID_NFT_ADDRESS = "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F"
+  AGENT_CACHE_TTL_MS = "60000"
+  GATEWAY_ENFORCE = "true"
+  # Secrets: PARENT_CHAIN_RPC_URL (BSC), AGENT_REGISTRY_ADDRESS (L2), GATEWAY_ALLOWLIST (ops wallets), BAB_TOKEN_ADDRESS
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 400
+    hard_limit = 800
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/health"
+
+[[restart]]
+  policy = "always"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

@@ -1,0 +1,111 @@
+{
+  "chain": {
+    "id": 111900,
+    "name": "${CHAIN_NAME}",
+    "info-files": ["/home/user/.arbitrum/chain-info.json"]
+  },
+  "parent-chain": {
+    "id": 97,
+    "connection": {
+      "url": "${PARENT_CHAIN_RPC_URL}",
+      "timeout": "1m",
+      "retries": 3
+    }
+  },
+  "persistent": {
+    "chain": "/home/user/.arbitrum",
+    "global-config": "/home/user/.arbitrum"
+  },
+  "http": {
+    "addr": "0.0.0.0",
+    "port": 8547,
+    "vhosts": ["*"],
+    "corsdomain": ["*"],
+    "api": ["eth", "net", "web3", "arb", "txpool", "debug"]
+  },
+  "ws": {
+    "addr": "0.0.0.0",
+    "port": 8548,
+    "origins": ["*"],
+    "api": ["eth", "net", "web3", "arb"]
+  },
+  "node": {
+    "sequencer": true,
+    "dangerous": {
+      "no-sequencer-coordinator": true,
+      "disable-blob-reader": true
+    },
+    "parent-chain-reader": {
+      "use-finality-data": true,
+      "poll-interval": "2s"
+    },
+    "delayed-sequencer": {
+      "enable": true,
+      "use-merge-finality": true,
+      "finalize-distance": 20
+    },
+    "inbox-reader": {
+      "default-blocks-to-read": 500,
+      "max-blocks-to-read": 2000
+    },
+    "batch-poster": {
+      "enable": true,
+      "parent-chain-wallet": { "private-key": "${BATCH_POSTER_PRIVATE_KEY}" },
+      "max-delay": "2m",
+      "poll-interval": "10s",
+      "max-calldata-batch-size": 100000,
+      "post-4844-blobs": false,
+      "l1-block-bound": "latest",
+      "data-poster": {
+        "min-tip-cap-gwei": 0.1,
+        "max-tip-cap-gwei": 5,
+        "target-price-gwei": 1,
+        "wait-for-l1-finality": true
+      }
+    },
+    "staker": {
+      "enable": true,
+      "strategy": "MakeNodes",
+      "parent-chain-wallet": { "private-key": "${VALIDATOR_PRIVATE_KEY}" },
+      "use-smart-contract-wallet": false
+    },
+    "bold": {
+      "assertion-posting-interval": "15m",
+      "assertion-scanning-interval": "1m",
+      "assertion-confirming-interval": "1m"
+    },
+    "block-validator": {
+      "enable": true
+    },
+    "feed": {
+      "output": {
+        "enable": true,
+        "addr": "0.0.0.0",
+        "port": 9642,
+        "signed": false
+      }
+    }
+  },
+  "execution": {
+    "forwarding-target": "",
+    "sequencer": {
+      "enable": true,
+      "max-block-speed": "250ms",
+      "max-tx-data-size": 95000,
+      "expected-surplus-gas-price-mode": "CalldataPrice"
+    },
+    "caching": {
+      "archive": false
+    },
+    "rpc": {
+      "gas-cap": 50000000,
+      "tx-fee-cap": 1
+    }
+  },
+  "init": {
+    "force": false
+  },
+  "log-level": "info",
+  "log-type": "json",
+  "metrics": false
+}
