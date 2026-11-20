@@ -175,8 +175,9 @@ function StatsStrip({ head }: { head: HeadResponse }) {
     {
       icon: <Clock3 className="h-4 w-4" />,
       label: "Avg block time",
-      value: s?.avgBlockMs != null ? `${s.avgBlockMs} ms` : "—",
-      sub: `observed · target ${TARGET_BLOCK_MS} ms`,
+      // Nitro seals blocks only when there are transactions; a huge observed gap just means the chain was idle.
+      value: s?.avgBlockMs == null ? "—" : s.avgBlockMs > 60_000 ? "on demand" : `${s.avgBlockMs} ms`,
+      sub: s?.avgBlockMs != null && s.avgBlockMs > 60_000 ? `idle · blocks sealed per tx · target ${TARGET_BLOCK_MS} ms` : `observed · target ${TARGET_BLOCK_MS} ms`,
     },
     {
       icon: <ArrowLeftRight className="h-4 w-4" />,

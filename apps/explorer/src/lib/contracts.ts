@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { getAddress, isAddress, parseAbi, type Address } from "viem";
 import { rpc, tryRpc } from "./client";
+import { IS_DEVNET } from "./config";
 
 export type KnownContractName = "AgentRegistry" | "GenesisSeat" | "FeeKeeper";
 
@@ -52,7 +53,9 @@ export function knownContracts(): KnownContract[] {
     GenesisSeat: process.env.NEXT_PUBLIC_GENESIS_SEAT || process.env.GENESIS_SEAT,
     FeeKeeper: process.env.NEXT_PUBLIC_FEE_KEEPER || process.env.FEE_KEEPER,
   };
-  const fromFile = readDevnetJson();
+  // The devnet.json fallback only applies to the Hardhat devnet; on mainnet/testnet the L2 system
+  // contracts are configured purely via env (and may be absent until deployed — the UI degrades).
+  const fromFile = IS_DEVNET ? readDevnetJson() : {};
   const out: KnownContract[] = [];
   for (const name of ["AgentRegistry", "GenesisSeat", "FeeKeeper"] as KnownContractName[]) {
     const raw = (fromEnv[name] && fromEnv[name]!.trim()) || fromFile[name];

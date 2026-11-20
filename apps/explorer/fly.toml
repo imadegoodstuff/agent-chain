@@ -1,31 +1,46 @@
+# AGENT CHAIN mainnet explorer (chain 1119, settles to BSC). Deploy with:
+#   fly deploy --remote-only
+# The devnet instance lives in fly.devnet.toml (app agentchain-explorer-devnet, chain 11190).
 app = "agentchain-explorer"
 primary_region = "sin"
 
 [build]
+  dockerfile = "Dockerfile"
   [build.args]
-    NEXT_PUBLIC_RPC_URL = "https://rpc.agent-chain.agency"
-    NEXT_PUBLIC_CHAIN_ID = "11190"
-    NEXT_PUBLIC_CHAIN_NAME = "AGENT CHAIN Devnet"
-    NEXT_PUBLIC_SYMBOL = "tANTB"
+    NEXT_PUBLIC_NETWORK = "mainnet"
+    NEXT_PUBLIC_RPC_URL = "https://mainnet-rpc.agent-chain.agency"
+    NEXT_PUBLIC_RPC_FALLBACK_URL = "https://agentchain-gateway.fly.dev"
+    NEXT_PUBLIC_CHAIN_ID = "1119"
+    NEXT_PUBLIC_CHAIN_NAME = "AGENT CHAIN"
+    NEXT_PUBLIC_SYMBOL = "ANTB"
+    NEXT_PUBLIC_BLOCK_MS = "250"
     NEXT_PUBLIC_EXPLORER_NAME = "AGENT CHAIN Explorer"
     NEXT_PUBLIC_WEBSITE_URL = "https://agent-chain.agency"
-    # Devnet contract addresses (apps/devnet/deployments/devnet.json, deterministic Hardhat deployer nonces)
-    NEXT_PUBLIC_AGENT_REGISTRY = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-    NEXT_PUBLIC_GENESIS_SEAT = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-    NEXT_PUBLIC_FEE_KEEPER = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+    NEXT_PUBLIC_EXPLORER_URL = "https://explorer.agent-chain.agency"
+    # Nitro Rollup on BSC (apps/chain/deployments/mainnet/rollup.json)
+    NEXT_PUBLIC_ROLLUP_ADDRESS = "0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85"
+    # L2 system contracts (AgentRegistry / GenesisSeat / FeeKeeper) are NOT deployed on mainnet yet.
+    # Leave empty; the explorer hides the related panels. Fill in once deployed.
+    NEXT_PUBLIC_AGENT_REGISTRY = ""
+    NEXT_PUBLIC_GENESIS_SEAT = ""
+    NEXT_PUBLIC_FEE_KEEPER = ""
 
 [env]
-  RPC_URL = "https://agentchain-rpc.fly.dev"
-  NEXT_PUBLIC_RPC_URL = "https://rpc.agent-chain.agency"
-  NEXT_PUBLIC_CHAIN_ID = "11190"
-  NEXT_PUBLIC_CHAIN_NAME = "AGENT CHAIN Devnet"
-  NEXT_PUBLIC_SYMBOL = "tANTB"
+  # Server-side reads go straight to the private sequencer over Fly 6PN (same org as agentchain-node).
+  # Switch to https://agentchain-gateway.fly.dev if the explorer is ever moved to another org.
+  RPC_URL = "http://agentchain-node.internal:8547"
+  NEXT_PUBLIC_NETWORK = "mainnet"
+  NEXT_PUBLIC_RPC_URL = "https://mainnet-rpc.agent-chain.agency"
+  NEXT_PUBLIC_RPC_FALLBACK_URL = "https://agentchain-gateway.fly.dev"
+  NEXT_PUBLIC_CHAIN_ID = "1119"
+  NEXT_PUBLIC_CHAIN_NAME = "AGENT CHAIN"
+  NEXT_PUBLIC_SYMBOL = "ANTB"
+  NEXT_PUBLIC_BLOCK_MS = "250"
   NEXT_PUBLIC_EXPLORER_NAME = "AGENT CHAIN Explorer"
   NEXT_PUBLIC_WEBSITE_URL = "https://agent-chain.agency"
-  # Runtime fallbacks for known contracts (used if the build-time values are absent)
-  AGENT_REGISTRY = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-  GENESIS_SEAT = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-  FEE_KEEPER = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+  NEXT_PUBLIC_EXPLORER_URL = "https://explorer.agent-chain.agency"
+  NEXT_PUBLIC_ROLLUP_ADDRESS = "0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85"
+  # Runtime contract fallbacks intentionally omitted (AGENT_REGISTRY / GENESIS_SEAT / FEE_KEEPER).
 
 [http_service]
   internal_port = 3000
@@ -45,7 +60,7 @@ primary_region = "sin"
     timeout = "5s"
     grace_period = "20s"
     method = "GET"
-    path = "/api/head"
+    path = "/api/healthz"
 
 [[vm]]
   size = "shared-cpu-1x"

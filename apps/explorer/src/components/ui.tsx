@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { NETWORK } from "@/lib/config";
 
 export function Card({ title, right, children, className = "", pad = true }: { title?: ReactNode; right?: ReactNode; children: ReactNode; className?: string; pad?: boolean }) {
   return (
@@ -82,7 +83,7 @@ export function Unreachable({ error, retryHref }: { error?: string; retryHref?: 
         <span className="h-1.5 w-1.5 rounded-full bg-danger" /> RPC unreachable
       </div>
       <p className="text-sm text-muted max-w-md mx-auto">
-        The explorer could not reach the devnet RPC. The node may be restarting. Retry in a few seconds.
+        The explorer could not reach the {NETWORK} RPC. The node may be restarting. Retry in a few seconds.
       </p>
       {error && <p className="num text-[11px] text-muted/70 mt-2 break-all">{error}</p>}
       {retryHref && (

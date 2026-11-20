@@ -1,0 +1,54 @@
+# AGENT CHAIN devnet explorer (chain 11190, Hardhat). Deploy: fly deploy -c fly.devnet.toml --remote-only
+app = "agentchain-explorer-devnet"
+primary_region = "sin"
+
+[build]
+  [build.args]
+    NEXT_PUBLIC_RPC_URL = "https://devnet-rpc.agent-chain.agency"
+    NEXT_PUBLIC_CHAIN_ID = "11190"
+    NEXT_PUBLIC_CHAIN_NAME = "AGENT CHAIN Devnet"
+    NEXT_PUBLIC_SYMBOL = "tANTB"
+    NEXT_PUBLIC_EXPLORER_NAME = "AGENT CHAIN Explorer"
+    NEXT_PUBLIC_WEBSITE_URL = "https://agent-chain.agency"
+    NEXT_PUBLIC_EXPLORER_URL = "https://devnet-explorer.agent-chain.agency"
+    # Devnet contract addresses (apps/devnet/deployments/devnet.json, deterministic Hardhat deployer nonces)
+    NEXT_PUBLIC_AGENT_REGISTRY = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    NEXT_PUBLIC_GENESIS_SEAT = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+    NEXT_PUBLIC_FEE_KEEPER = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+
+[env]
+  RPC_URL = "https://agentchain-rpc.fly.dev"
+  NEXT_PUBLIC_RPC_URL = "https://devnet-rpc.agent-chain.agency"
+  NEXT_PUBLIC_CHAIN_ID = "11190"
+  NEXT_PUBLIC_CHAIN_NAME = "AGENT CHAIN Devnet"
+  NEXT_PUBLIC_SYMBOL = "tANTB"
+  NEXT_PUBLIC_EXPLORER_NAME = "AGENT CHAIN Explorer"
+  NEXT_PUBLIC_WEBSITE_URL = "https://agent-chain.agency"
+  # Runtime fallbacks for known contracts (used if the build-time values are absent)
+  AGENT_REGISTRY = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+  GENESIS_SEAT = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  FEE_KEEPER = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/api/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

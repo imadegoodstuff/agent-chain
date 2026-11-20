@@ -11,7 +11,7 @@ import { HashLink, PlainHash } from "@/components/HashLink";
 import { InputData } from "@/components/InputData";
 import { LogsList } from "@/components/LogsList";
 import { Badge, Card, GasBar, KV, MethodBadge, SectionLabel, Unreachable } from "@/components/ui";
-import { ANT_USD_ILLUSTRATIVE } from "@/lib/config";
+import { ANT_USD_ILLUSTRATIVE, IS_DEVNET } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -143,7 +143,7 @@ export default async function TxPage({ params }: { params: Params }) {
             {fee !== null ? (
               <div className="space-y-1">
                 <div>
-                  <span className="text-muted">Paid (devnet gas price {formatGwei(effGas)} gwei): </span>
+                  <span className="text-muted">Paid ({IS_DEVNET ? "devnet " : ""}gas price {formatGwei(effGas)} gwei): </span>
                   <span className="num">{formatNative(fee, { maxFrac: 12 })}</span>
                   <span className="text-muted ml-2" title={`Illustrative at ANT = $${ANT_USD_ILLUSTRATIVE}`}>≈ {formatUsd(nativeToUsd(fee))}</span>
                 </div>

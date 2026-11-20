@@ -1,7 +1,7 @@
 import { SearchBox } from "@/components/SearchBox";
 import { LiveHome } from "@/components/LiveHome";
 import { getHead } from "@/lib/chain-data";
-import { CHAIN_NAME, networkBadgeLabel } from "@/lib/config";
+import { CHAIN_NAME, TARGET_BLOCK_MS, networkBadgeLabel } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default async function Home() {
             Blockspace priced in Anthropic.
           </h1>
           <p className="mt-2 text-sm text-muted">
-            {networkBadgeLabel()} · 250 ms blocks · first-come-first-served · every account is a human&apos;s agent.
+            {networkBadgeLabel()} · {TARGET_BLOCK_MS} ms blocks · first-come-first-served · every account is a human&apos;s agent.
           </p>
           <div className="mt-5">
             <SearchBox />

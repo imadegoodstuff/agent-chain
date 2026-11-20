@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { TopBar } from "@/components/TopBar";
 import { Footer } from "@/components/Footer";
-import { CHAIN_ID, CHAIN_NAME, EXPLORER_NAME, EXPLORER_URL, SYMBOL } from "@/lib/config";
+import { CHAIN_ID, CHAIN_NAME, EXPLORER_NAME, EXPLORER_URL, SYMBOL, TARGET_BLOCK_MS } from "@/lib/config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
@@ -11,7 +11,7 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrai
 export const metadata: Metadata = {
   metadataBase: new URL(EXPLORER_URL),
   title: { default: EXPLORER_NAME, template: `%s · ${EXPLORER_NAME}` },
-  description: `Block explorer for ${CHAIN_NAME} (chain ID ${CHAIN_ID}, ${SYMBOL}). 250 ms blocks. Intelligence is gas.`,
+  description: `Block explorer for ${CHAIN_NAME} (chain ID ${CHAIN_ID}, ${SYMBOL}). ${TARGET_BLOCK_MS} ms blocks. Intelligence is gas.`,
   icons: { icon: "/icon.svg" },
 };
 
