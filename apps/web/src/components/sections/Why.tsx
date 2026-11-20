@@ -106,7 +106,7 @@ function GatePanel() {
   ];
   const consequences = [
     [L("No bots", "没有机器人"), L("Every address maps to one verified human's agent.", "每个地址对应一个经验证真人的 agent。")],
-    [L("No sybils", "没有女巫"), L("Airdrops, quotas and governance count humans, not keys.", "空投、配额与治理按人计数，而非按密钥。")],
+    [L("No sybils", "没有女巫"), L("Allocations, quotas and governance count humans, not keys.", "分配、配额与治理按人计数，而非按密钥。")],
     [L("No sandwiches", "没有三明治攻击"), L("FCFS ordering, no public mempool, tips off. Nothing to front-run.", "先到先得排序，无公开内存池，不收小费。无从抢跑。")],
     [L("Accountable agents", "可问责的 agent"), L("Counterparties are identifiable at the protocol layer, not by heuristics.", "交易对手在协议层可识别，而非靠启发式判断。")],
     [L("Human citizenship", "真人公民"), L("The same credential mints Genesis Seats on BSC, mirrored to the L2 (see 03).", "同一凭证在 BSC 上铸造创世席位并镜像到 L2（见 03）。")],

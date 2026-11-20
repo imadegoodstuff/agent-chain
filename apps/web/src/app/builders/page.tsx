@@ -98,7 +98,7 @@ export default async function BuildersPage() {
           <a href={bscAddr(BSC_OWNER)} target="_blank" rel="noreferrer" className="text-bone hover:text-amber">
             {BSC_OWNER}
           </a>{" "}
-          · $AGENT token: not launched yet (no address) · Credentials: Agent ID {TOKENS.AGENT_ID.slice(0, 8)}… / BAB · Gas token: ANTB {TOKENS.ANTB.slice(0, 8)}…
+          · $AGENT token (Flap, launched 2026-11-20): {TOKENS.AGENT} · Credentials: Agent ID {TOKENS.AGENT_ID.slice(0, 8)}… / BAB · Gas token: ANTB {TOKENS.ANTB.slice(0, 8)}…
         </p>
 
         <details id="owner-permissions" className="card group mt-6 scroll-mt-24 open:bg-surface">

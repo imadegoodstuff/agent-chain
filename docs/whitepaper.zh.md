@@ -377,15 +377,22 @@ Phase 3 在排序器 feed 上引入 **50 ms 流式子块**。结算意义上的�
 
 ### 10.1 $AGENT
 
-`$AGENT` 在 **Flap**（flap.sh）上以如下配置发射：
+`$AGENT` 已于 2026-11-20 在 **Flap**（flap.sh）上以如下配置**发射**：
 
 | 参数 | 值 |
 |---|---|
-| 池子资产 | ANTB |
+| 代币 | `0x8E3318Ef4411b4488429Ff6970602968D7307777` —— ERC-20 `AGENT CHAIN` / `AGENT`，18 位小数，总量 1,000,000,000（BSC） |
+| 发射 | `Portal.newTokenV6`，Flap 税收代币 V3；交易 `0xb9f6a26240c58831c3625650df82d0d58cad61d38789c9267dfe6314fa143365`，区块 134,659,029；发射方 = 链 owner `0x8D61…A443` |
+| 池子资产 | ANTB（联合曲线以 ANTB 报价）；售出 80% 后迁移到 PancakeSwap V2 |
 | 发射门控 | 无——开放发射。任何钱包都可以在 BSC 上买入、持有、交易 $AGENT |
 | 单钱包上限 | 无 |
+| 税收 | 买入 1% / 卖出 1%，持续 365 天；税收 100% 进入创建者金库钱包 `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`；无分红、无销毁 |
+| 创建者首购 | 0.6 ANTB → 15,060,562.91 AGENT（≈ 总量的 1.5%），已披露 |
 | Agent ID | 在 AGENT CHAIN 上发交易需要，持有 $AGENT 不需要。把 $AGENT 桥到链上需使用 Agent ID 账户 |
 | 团队交易费 | 无 |
+| 链接 | [Flap](https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777) · [BscScan](https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777) · 迁移后 DexScreener |
+
+$AGENT 不用于支付 gas，也不承诺任何收益；它是协议的社区与治理代币。
 
 #### 为什么 ANTB 是 gas 而 $AGENT 不是
 

@@ -50,6 +50,10 @@ Binance Agent ID 是 BSC 上的 ERC-721（`0x60B9262456dE011F7d15a54CdD8c48bAaa8
 
 两条 BSC 相关的工程说明：nitro-contracts 的 `ArbitrumChecker` 会探测地址 `0x64`，而它在 BSC 上是一个会烧光转发 gas 的已退役预编译合约，因此我们给该探测加了 100k gas 上限并重建了 5 个合约（其余字节完全一致）；此外 Nitro 从 BSC 得不到最终性信号（`difficulty ≠ 0`），节点以 `check-batch-finality=false` 与 `parent-chain-block-time=450ms` 运行。详见 `apps/chain/RESEARCH.md`。
 
+## 8b. $AGENT 是什么？在哪里？
+
+`$AGENT`（`AGENT CHAIN` / `AGENT`，ERC-20，18 位小数，总量 1,000,000,000）已于 2026-11-20 在 **Flap** 发射，BSC 地址 `0x8E3318Ef4411b4488429Ff6970602968D7307777`——以 ANTB 联合曲线开放发射：任何钱包都可以买入、持有、交易，无需 Agent ID。它是 Flap 税收代币 V3：买入 1% / 卖出 1%，持续 365 天，税收 100% 进入创建者金库钱包 `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`；无分红、无销毁。售出 80% 后迁移到 PancakeSwap V2 池。创建者在发射时买入 0.6 ANTB（15,060,562.91 AGENT，≈ 总量的 1.5%），已披露。$AGENT 不用于支付 gas（gas 是 ANTB），也不承诺任何收益；排序器收入 40% 回购销毁是治理参数，而非承诺。Flap：https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777 · BscScan：https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777。加密资产可能归零；本文不构成投资建议。
+
 ## 9. 它兼容 EVM 吗？
 
 兼容。AGENT CHAIN 运行 Arbitrum Nitro，与 EVM 等价：Solidity 合约、Hardhat、Foundry、viem、ethers 和 MetaMask 无需改动即可使用。原生货币与 ETH 一样是 18 位小数。Stylus 也已启用，因此合约可以用 Rust 或任何能编译到 WASM 的语言编写。与通用 EVM 链的两点差异：排序器要求 `isAgent(tx.origin)` 为 true；优先费不影响排序。

@@ -50,6 +50,10 @@ Yes. **Mainnet Beta launched on 2026-11-20.** AGENT CHAIN is chain ID 1119 (0x45
 
 Two BSC-specific engineering notes: nitro-contracts' `ArbitrumChecker` probes address `0x64`, which on BSC is a retired precompile that burns all forwarded gas, so 5 contracts were rebuilt with a 100k gas cap on that probe (byte-identical otherwise); and because Nitro sees no finality signal from BSC (`difficulty ≠ 0`), the node runs with `check-batch-finality=false` and `parent-chain-block-time=450ms`. See `apps/chain/RESEARCH.md`.
 
+## 8b. What is $AGENT and where is it?
+
+`$AGENT` (`AGENT CHAIN` / `AGENT`, ERC-20, 18 decimals, 1,000,000,000 supply) launched on **Flap** on 2026-11-20 at `0x8E3318Ef4411b4488429Ff6970602968D7307777` on BSC — an open launch on an ANTB bonding curve: any wallet can buy, hold and trade it, no Agent ID needed. It is a Flap tax token V3: 1% buy / 1% sell tax for 365 days, 100% of the tax goes to the creator treasury wallet `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`; no dividends, no burn. It migrates to a PancakeSwap V2 pool once 80% of supply is sold. The creator bought 0.6 ANTB worth at launch (15,060,562.91 AGENT, ≈1.5% of supply), which is disclosed. $AGENT does not pay for gas (ANTB does) and promises no yield; the 40% buy-and-burn share of sequencer revenue is a governance parameter, not a promise. Flap: https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777 · BscScan: https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777. Crypto assets can lose all value; nothing here is investment advice.
+
 ## 9. Is it EVM compatible?
 
 Yes. AGENT CHAIN runs Arbitrum Nitro, which is EVM-equivalent: Solidity contracts, Hardhat, Foundry, viem, ethers and MetaMask work unchanged. The native currency has 18 decimals like ETH. Stylus is also enabled, so contracts can be written in Rust or any language that compiles to WASM. Two differences from a generic EVM chain: the sequencer requires `isAgent(tx.origin)` to be true, and priority tips do not affect ordering.

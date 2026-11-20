@@ -44,7 +44,7 @@ Conversion assumptions: 3,000 impressions → 300 site visits → 120 Agent ID h
 | Skill PR opened to binance/binance-skills-hub | this package | D3 (Nov 23), merge whenever |
 | MCP HTTP endpoint deployed (`agentchain-mcp.fly.dev`) | this package | D6 |
 | `Bridge` on BSC mainnet (caps 1 / 500) + L2 Mainnet Beta | contracts/bsc, apps/chain | D12 (Dec 2) |
-| `$AGENT` launch on Flap (ANTB pool) | team | D13 (Dec 3) |
+| `$AGENT` launch on Flap (ANTB pool) | team | **done D0 (Nov 20)** — `0x8E3318Ef4411b4488429Ff6970602968D7307777` |
 | Submission form + video | team (`<HUMAN>`) | D18 (Dec 8) |
 
 If Bridge / $AGENT slip, the submission still stands on Mirror + SeatClaim; the 30-address floor should be met by D9 from seats alone.
@@ -66,7 +66,7 @@ If Bridge / $AGENT slip, the submission still stands on Mirror + SeatClaim; the 
 | D10 | Sun Nov 30 | Bridge testnet soak. | ZH community AMA in TG. | 140 |
 | D11 | Mon Dec 1 | Bridge audit-lite review (internal), caps verified. | Developer post: how to read AGENT CHAIN from any MCP client in 3 lines. | 160 |
 | **D12** | **Tue Dec 2** | **Bridge live on BSC mainnet (1 ANTB / 500 total), L2 Mainnet Beta.** | "Bridge is open" thread with the full bridging risk warning. First 1-ANTB deposits are from the team (disclosed). | 180 seats; first 20 deposits |
-| **D13** | **Wed Dec 3** | **$AGENT launch on Flap, ANTB pool, open to all wallets.** | Flap launch post (facts only: pool, no cap, no team fee, no Agent ID needed to hold). Risk warning. | 200 |
+| **D13** | **Wed Dec 3** | **$AGENT curve / migration update** (token already live since Nov 20 at `0x8E3318Ef…7777`). | Facts-only post: curve progress toward PancakeSwap migration, tax → creator treasury wallet, no Agent ID needed to hold. Risk warning. | 200 |
 | D14 | Thu Dec 4 | — | Second KOL wave; Square article "Genesis is human: how the snapshot works". | 230 |
 | D15 | Fri Dec 5 | Snapshot block announced (for genesis). | "Snapshot in 72 h" reminder — accurate, not FOMO: claims after the snapshot still work, they just are not in block 0. | 260 |
 | D16 | Sat Dec 6 | Final video edit; README sweep. | Weekend recap. | 280 |
@@ -191,7 +191,7 @@ Risk: new unaudited contracts, irreversible txs, DYOR. Independent project, not 
 2. 打开 <GENESIS_URL>，用 Agentic Wallet 完成 `register()`，再完成 `claim()`。每一步都会先显示完整的合约地址和 calldata，你确认后才签名。
 3. 或者让你的 agent 来做：安装 `agent-chain` skill，说"领取我的 Genesis Seat"。skill 走的是 `baw contract-call preview → execute`，永远不会跳过你的确认。
 
-**合约。** 四个 BSC 合约全部开源，BscScan 已验证，owner 权限在 README 中公开：`AgentRegistryMirror`、`GenesisSeatClaim`、`Bridge`（Beta 期每地址 1 ANTB、总量 500 ANTB 上限）、`$AGENT`（Flap 上以 ANTB 池公开发射，持有不需要 Agent ID）。
+**合约。** 四个 BSC 合约全部开源，BscScan 已验证，owner 权限在 README 中公开：`AgentRegistryMirror`、`GenesisSeatClaim`、`Bridge`（Beta 期每地址 1 ANTB、总量 500 ANTB 上限）、`$AGENT`（已于 2026-11-20 在 Flap 以 ANTB 联合曲线公开发射，地址 `0x8E3318Ef4411b4488429Ff6970602968D7307777`，持有不需要 Agent ID；买卖税 1%/1% 进入创建者金库钱包）。
 
 **风险提示。** 合约为新代码、未经完整审计；单一排序器；跨链桥在 Beta 期有上限；ANTB 由 BTech Holdings Ltd 在 ADGM 规则下发行，不向美国人士提供，发行方可暂停转账。交易不可撤销。请只使用你能承受损失的资金，并自行研究。
 
@@ -208,7 +208,7 @@ AGENT CHAIN 为独立项目，与 Anthropic、Binance、BNB Chain 无关联、�
 2. Open <GENESIS_URL> and complete `register()` then `claim()` with your Agentic Wallet. Each step shows the full contract address and calldata before you sign.
 3. Or let your agent do it: install the `agent-chain` skill and say "claim my Genesis Seat". It uses `baw contract-call preview → execute` and never skips your confirmation.
 
-**Contracts.** Four BSC contracts, all open source and BscScan-verified, owner permissions in the README: `AgentRegistryMirror`, `GenesisSeatClaim`, `Bridge` (Beta caps 1 ANTB/address, 500 total), `$AGENT` (open launch on Flap with an ANTB pool; no Agent ID needed to hold it).
+**Contracts.** Four BSC contracts, all open source and BscScan-verified, owner permissions in the README: `AgentRegistryMirror`, `GenesisSeatClaim`, `Bridge` (Beta caps 1 ANTB/address, 500 total), `$AGENT` (launched 2026-11-20 on Flap on an ANTB bonding curve, `0x8E3318Ef4411b4488429Ff6970602968D7307777`; no Agent ID needed to hold it; 1%/1% tax to the creator treasury wallet).
 
 **Risk.** New, not fully audited contracts; a single sequencer; bridge caps during Beta; ANTB is issued by BTech Holdings Ltd under ADGM rules, not available to US persons, and its issuer can pause transfers. Transactions are irreversible. Use only funds you can afford to lose and do your own research.
 
@@ -216,9 +216,9 @@ AGENT CHAIN is independent and not affiliated with, endorsed by, or sponsored by
 
 ### 6.7 Flap / ANTB holder community post (EN + ZH, D7 and D13)
 
-EN: ANTB holders — AGENT CHAIN uses ANTB as native gas, priced in USD and bridged 1:1 from BSC. Bridge opens Dec 2 with Beta caps (1 ANTB per address, 500 total) and requires a Binance Agent ID. $AGENT launches on Flap Dec 3 with an ANTB pool, open to any wallet, no cap, no team fee. Details and the full bridging risk warning: https://agent-chain.agency/bridge. Not affiliated with Binance or Anthropic; not investment advice; $AGENT confers no rights to revenue or returns.
+EN: ANTB holders — AGENT CHAIN uses ANTB as native gas, priced in USD and bridged 1:1 from BSC. Bridge opens Dec 2 with Beta caps (1 ANTB per address, 500 total) and requires a Binance Agent ID. $AGENT is live on Flap (since Nov 20) on an ANTB bonding curve, open to any wallet, no cap, no team swap fee (1%/1% tax to the creator treasury wallet): https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777. Details and the full bridging risk warning: https://agent-chain.agency/bridge. Not affiliated with Binance or Anthropic; not investment advice; $AGENT confers no rights to revenue or returns.
 
-ZH：ANTB 持有者 —— AGENT CHAIN 以 ANTB 作为原生 gas，按美元定价，从 BSC 1:1 桥入。跨链桥 12 月 2 日开放，Beta 期每地址 1 ANTB、总量 500 ANTB 上限，需要 Binance Agent ID。$AGENT 12 月 3 日在 Flap 以 ANTB 池发射，任何钱包可参与，无上限，无团队手续费。详情与完整跨链风险提示：https://agent-chain.agency/bridge。与 Binance、Anthropic 无关联；不构成投资建议；$AGENT 不代表任何收入或回报权利。
+ZH：ANTB 持有者 —— AGENT CHAIN 以 ANTB 作为原生 gas，按美元定价，从 BSC 1:1 桥入。跨链桥 12 月 2 日开放，Beta 期每地址 1 ANTB、总量 500 ANTB 上限，需要 Binance Agent ID。$AGENT 已于 11 月 20 日在 Flap 以 ANTB 联合曲线发射，任何钱包可参与，无上限，无团队交易手续费（买卖税 1%/1% 进入创建者金库钱包）：https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777。详情与完整跨链风险提示：https://agent-chain.agency/bridge。与 Binance、Anthropic 无关联；不构成投资建议；$AGENT 不代表任何收入或回报权利。
 
 ### 6.8 Telegram / Discord announcement (EN + ZH, D5)
 

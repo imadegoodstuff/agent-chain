@@ -99,7 +99,7 @@ export const ROLE_ROWS = [
   {
     role: "Batch poster",
     address: ROLES.batchPoster,
-    powers: "Posts transaction batches to SequencerInbox. Cannot alter state, only order what the sequencer produced. Receives the L1 pricing reward.",
+    powers: "Posts transaction batches to SequencerInbox. Cannot alter state, only order what the sequencer produced. Is reimbursed for L1 posting costs via the L1 pricing recipient.",
     disclosure: "Hot key on the node (Fly, sin).",
   },
   {

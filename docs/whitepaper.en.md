@@ -377,15 +377,22 @@ Batches are posted to BSC, whose **fast finality (1.5–4 s)** means posted data
 
 ### 10.1 $AGENT
 
-`$AGENT` launches on **Flap** (flap.sh) with the following configuration:
+`$AGENT` **launched on Flap** (flap.sh) on 2026-11-20 with the following configuration:
 
 | Parameter | Value |
 |---|---|
-| Pool asset | ANTB |
+| Token | `0x8E3318Ef4411b4488429Ff6970602968D7307777` — ERC-20 `AGENT CHAIN` / `AGENT`, 18 decimals, 1,000,000,000 supply (BSC) |
+| Launch | `Portal.newTokenV6`, Flap tax token V3; tx `0xb9f6a26240c58831c3625650df82d0d58cad61d38789c9267dfe6314fa143365`, block 134,659,029; launcher = chain owner `0x8D61…A443` |
+| Pool asset | ANTB (bonding curve quoted in ANTB); migrates to PancakeSwap V2 at 80% of supply sold |
 | Launch gate | None — open launch. Any wallet can buy, hold and trade $AGENT on BSC |
 | Per-wallet cap | None |
+| Tax | 1% buy / 1% sell for 365 days; 100% of tax to the creator treasury wallet `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`; no dividends, no burn |
+| Creator first buy | 0.6 ANTB → 15,060,562.91 AGENT (≈1.5% of supply), disclosed |
 | Agent ID | Required to transact on AGENT CHAIN, not to hold $AGENT. Bridging $AGENT to the chain requires an Agent ID account |
 | Team swap fee | None |
+| Links | [Flap](https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777) · [BscScan](https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777) · DexScreener after migration |
+
+$AGENT does not pay for gas and promises no yield; it is the protocol's community and governance token.
 
 #### Why ANTB is gas and $AGENT is not
 

@@ -52,7 +52,7 @@ All three AGENT CHAIN contracts inherit `AgentGate`: `isAgent(a) = AgentID.balan
 | `AgentRegistryMirror` | `0x9C5488f9Aa9468B1db3Cc6B71143A8B2Ca810CF0` | `register()` is `onlyAgent` | Opts in to the AGENT CHAIN registry (address, 1-based index, timestamp); emits `AgentRegistered` |
 | `GenesisSeatClaim` | `0x3972579dd0128BF0b6778cB3B457ba1d14D1695b` | `claim()` is `onlyAgent` (independent of registration) | Claims a numbered, non-transferable Genesis Seat (ERC-721 `SEAT`, on-chain metadata); emits `SeatClaimed` |
 | `Bridge` | `0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92` | `deposit()` is `onlyAgent` (independent of registration); `l2Recipient` non-zero | Escrows ANTB for 1:1 native ANTB on AGENT CHAIN (Beta caps 1 ANTB/address, 500 global); emits `Deposited` |
-| `$AGENT` | `<AGENT_TOKEN>` | none (open launch on Flap, ANTB pool) | Holds/trades the network token; no Agent ID required |
+| `$AGENT` | `0x8E3318Ef4411b4488429Ff6970602968D7307777` (launched on Flap 2026-11-20, tx `0xb9f6a262…3365`) | none (open launch on Flap, ANTB bonding curve, migrates to PancakeSwap V2 at 80% sold) | Holds/trades the network token; no Agent ID required. 1%/1% tax for 365 days → creator treasury wallet `0xD800…FcaB`; creator first buy 0.6 ANTB → 15,060,562.91 AGENT (≈1.5%) disclosed |
 
 Supporting external contracts (not ours): Binance Agent ID `0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F` ("SPACE ID Agent ID", deployed block 127,950,748; **236,355 holders at block 134,639,601, 2026-11-20** — reproducible with `contracts/bsc/scripts/snapshot.ts`); BAB token `0x2B09d47D550061f995A3b5C6F0Fd58005215D7c8` (alternative credential); ANTB `0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`.
 
@@ -99,7 +99,7 @@ Owner of all three contracts at launch: the AGENT CHAIN deployer EOA **`0x0F03F1
 | `Bridge` | `setCaps(uint256,uint256)` | owner | Beta caps 1 ANTB / 500 ANTB (SPEC §4) — raise as the chain proves out | only affects future deposits |
 | `Bridge` | `setInbox(address)` | owner | placeholder for the real Nitro Inbox | no effect on funds in this version |
 | `Bridge` | `withdrawTo(address,uint256)` | owner | **Beta escrow.** The Nitro Inbox for AGENT CHAIN is not yet live on BSC, so deposits are held in this contract and credited on L2 by the relayer from `Deposited` events. `withdrawTo` is how escrowed ANTB is moved into the real Inbox once it exists, or returned to depositors if Beta is wound down. | Trusted step during Beta, bounded by the escrowed balance (max 500 ANTB under default caps), every call emits `EscrowWithdrawn`. This power disappears when the Inbox replaces this contract. |
-| `$AGENT` | none after launch | — | standard Flap launch token | no mint, pause, blocklist or tax |
+| `$AGENT` | Flap tax token V3 (owner = Flap Portal) | Portal / tax processor | 1% buy / 1% sell tax for 365 days, 100% to the creator treasury wallet `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`; no mint after launch, no pause, no blocklist, no dividends, no burn | tax parameters are fixed at launch and expire after 365 days; disclosed on the website Token section |
 | L2 `FeeKeeper` | `setUsdPerGas` / `setAntbUsd` | keeper ops key → governance | re-price the base fee within keeper limits | — |
 | L2 `AgentRegistry` | `register` / `revoke` | bridge message handler | mirror BSC registrations | — |
 

@@ -189,9 +189,12 @@ Plus everything in `AgentGate` (`NotAgent`, `ZeroAddress`, `isAgent`, `agentId`,
 
 | | |
 |---|---|
-| Address | `<AGENT_TOKEN>` |
-| Standard | ERC-20 (BEP-20), 18 decimals, launched on Flap (flap.sh) with an ANTB pool, open launch — no Agent ID gate, no per-wallet cap, no team swap fee. Not part of the `contracts/bsc` package. |
-| Owner permissions (disclosed) | Standard Flap launch token: no mint after launch, no pause, no blocklist, no tax. See `contracts/bsc/README.md` / Flap listing once live. |
+| Address | `0x8E3318Ef4411b4488429Ff6970602968D7307777` (BSC mainnet, launched 2026-11-20, tx `0xb9f6a26240c58831c3625650df82d0d58cad61d38789c9267dfe6314fa143365`, block 134,659,029) |
+| Standard | ERC-20 (BEP-20) `AGENT CHAIN` / `AGENT`, 18 decimals, total supply 1,000,000,000. Flap tax token V3 launched via `Portal.newTokenV6` (Portal `0xe2cE6ab80874Fa9Fa2aAE65D277Dd6B8e65C9De0`); bonding curve quoted in ANTB; open launch — no Agent ID gate, no per-wallet cap, no team swap fee. Migrates to PancakeSwap V2 at 80% sold. Not part of the `contracts/bsc` package. |
+| Tax (disclosed) | 1% buy / 1% sell for 365 days from launch, 100% of tax to the creator treasury wallet `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`; `dividendBps = 0` (no dividends), no burn, no LP share. Token owner is the Flap Portal; no mint after launch. Creator first buy at launch: 0.6 ANTB → 15,060,562.91 AGENT (≈1.5% of supply), held by `0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443`. |
+| Links | Flap `https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777` · BscScan `https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777` · DexScreener (after migration) `https://dexscreener.com/bsc/0x8E3318Ef4411b4488429Ff6970602968D7307777` |
+
+Read-only curve state (anyone, no signing): `Portal.getTokenV8Safe(address token)` on `0xe2cE6ab80874Fa9Fa2aAE65D277Dd6B8e65C9De0` returns `(status, reserve, circulatingSupply, price, …, dexSupplyThresh, …, pool, progress, …)` — `status 1` = tradable on the curve, `pool != 0` = migrated, `price` = ANTB-wei per 1 AGENT, `progress` = 1e18-scaled fraction toward migration. Describe $AGENT as the protocol's community and governance token: it does not pay for gas and promises no yield.
 
 ```
 function balanceOf(address account) view returns (uint256)                      // 0x70a08231

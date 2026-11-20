@@ -5,14 +5,15 @@ import { ArrowUpRight } from "lucide-react";
 import { useStats } from "@/hooks/useStats";
 import { useBsc } from "@/hooks/useBsc";
 import { useL2 } from "@/hooks/useL2";
+import { useToken } from "@/hooks/useToken";
 import { usePrice } from "@/hooks/usePrice";
 import { Section } from "../ui/Section";
 import { Reveal } from "../ui/Reveal";
 import { useL, useLang } from "../LangProvider";
-import { fmtAgo, fmtInt, fmtPct, fmtSmall, fmtUsd, fmtWei } from "@/lib/format";
+import { fmtAgo, fmtInt, fmtPct, fmtSmall, fmtUsd, fmtWei, shortAddr } from "@/lib/format";
 import { bscAddr } from "@/lib/bsc";
 import { NITRO } from "@/lib/l2";
-import { DEVNET, EXPLORER_URL, FEES, LINKS, MAINNET, TRANSFER_USD } from "@/lib/spec";
+import { AGENT_TOKEN, DEVNET, EXPLORER_URL, FEES, LINKS, MAINNET, TRANSFER_USD } from "@/lib/spec";
 
 /** Tiny ANTB amounts (≈1e-8) without scientific notation. */
 const tiny = (n: number) => n.toFixed(12).replace(/0+$/, "").replace(/\.$/, "");
@@ -66,7 +67,9 @@ export function LiveStrip({ seatsVisible: _seatsVisible }: { seatsVisible: boole
   const l2 = useL2(5_000);
   const b = useBsc(15_000);
   const s = useStats(5_000);
+  const tk = useToken(10_000);
   const p = usePrice();
+  const agentPriceAntb = tk?.priceWei ? Number(BigInt(tk.priceWei)) / 1e18 : null;
   const connecting = <span className="text-lg text-muted">{t("connecting")}</span>;
 
   const gasWei = l2?.l2 ? BigInt(l2.l2.gasPriceWei) : null;
@@ -90,7 +93,7 @@ export function LiveStrip({ seatsVisible: _seatsVisible }: { seatsVisible: boole
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-3 lg:grid-cols-5">
           <Stat
             label={L("L2 head block", "L2 最新区块")}
             live={!!l2?.ok}
@@ -156,6 +159,17 @@ export function LiveStrip({ seatsVisible: _seatsVisible }: { seatsVisible: boole
               )
             }
             href={LINKS.dexscreener}
+          />
+          <Stat
+            label="$AGENT · Flap"
+            live={!!tk?.ok}
+            value={agentPriceAntb !== null ? `${tiny(agentPriceAntb)} ANTB` : connecting}
+            sub={
+              tk?.ok
+                ? `${tk.status === "migrated" ? L("migrated to PancakeSwap", "已迁移到 PancakeSwap") : `${L("curve", "曲线")} ${tk.progressPct?.toFixed(1) ?? "—"}%`} · ${agentPriceAntb !== null ? `≈ $${(agentPriceAntb * p.usd).toFixed(7)}` : ""} · ${shortAddr(AGENT_TOKEN.address, 4)}`
+                : "Portal.getTokenV8Safe()"
+            }
+            href="/#token"
           />
           <Stat
             label={L("Fee / transfer", "每笔转账费用")}

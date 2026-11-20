@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { DEVNET_RPC_URL, disclaimers, LINKS, RPC_URL } from "@/lib/spec";
+import { AGENT_TOKEN, DEVNET_RPC_URL, disclaimers, LINKS, RPC_URL } from "@/lib/spec";
 import { HexMark } from "./Logo";
 import { useL, useLang } from "./LangProvider";
 
@@ -36,7 +36,9 @@ export function Footer() {
     {
       title: t("footer_community"),
       links: [
-        { label: L("Flap (launch venue · $AGENT not launched yet)", "Flap（发行场所 · $AGENT 尚未发行）"), href: LINKS.flap, external: true },
+        { label: L("$AGENT on Flap (0x8E33…7777)", "Flap 上的 $AGENT（0x8E33…7777）"), href: LINKS.flap, external: true },
+        { label: L("$AGENT on BscScan", "BscScan 上的 $AGENT"), href: LINKS.agentBscscan, external: true },
+        { label: L("$AGENT on DEX Screener (after migration)", "DEX Screener 上的 $AGENT（迁移后）"), href: LINKS.agentDexscreener, external: true },
         { label: L("ANTB on DEX Screener", "DEX Screener 上的 ANTB"), href: LINKS.dexscreener, external: true },
         { label: "Binance Agent ID", href: "https://www.binance.com/en/agent-id", external: true },
         { label: "x402", href: "https://www.x402.org/", external: true },
@@ -62,6 +64,13 @@ export function Footer() {
             <div className="mt-6 flex items-center gap-2 font-mono text-[11px] tracking-wider text-muted">
               <span className="h-1.5 w-1.5 rounded-full bg-green" />
               MAINNET BETA · CHAIN 1119 · SIN
+            </div>
+            <div className="mt-3 break-all font-mono text-[11px] text-muted">
+              $AGENT · BSC ·{" "}
+              <a href={LINKS.agentBscscan} target="_blank" rel="noreferrer" className="text-bone/80 hover:text-amber">
+                {AGENT_TOKEN.address}
+              </a>
+              <div className="mt-1 text-muted/80">{L(AGENT_TOKEN.standingLine, AGENT_TOKEN.standingLineZh)}</div>
             </div>
           </div>
           {cols.map((c) => (

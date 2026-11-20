@@ -43,6 +43,31 @@ export type L2Stats = {
   error?: string;
 };
 
+/** /api/token — $AGENT live state from the Flap Portal + ERC-20 reads (bigints as strings). */
+export type TokenStats = {
+  ok: boolean;
+  ts: number;
+  status: "curve" | "migrated" | "unknown";
+  portalStatus: number | null;
+  pool: string | null;
+  /** ANTB-wei per 1 AGENT (18 dec) */
+  priceWei: string | null;
+  /** 1e18-scaled fraction toward the migration threshold */
+  progressE18: string | null;
+  progressPct: number | null;
+  /** quote reserve held by the curve, wei ANTB */
+  reserveWei: string | null;
+  /** tokens sold on the curve (circulatingSupply), wei */
+  circulatingWei: string | null;
+  dexSupplyThreshWei: string | null;
+  totalSupplyWei: string | null;
+  launcherBalanceWei: string | null;
+  buyTaxBps: number | null;
+  sellTaxBps: number | null;
+  taxExpiresAt: number | null;
+  error?: string;
+};
+
 /** /api/bsc?address=0x… — read-only status of ONE address the user pasted. */
 export type AddressStatus = {
   ok: boolean;

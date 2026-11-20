@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { HeroLattice } from "./HeroLattice";
-import { useLang } from "../LangProvider";
+import { useL, useLang } from "../LangProvider";
 import { LINKS } from "@/lib/spec";
 import { HeroHud } from "./HeroHud";
 
@@ -47,6 +47,7 @@ function useHeroMode() {
 
 export function Hero() {
   const { t } = useLang();
+  const L = useL();
   const { mode, count } = useHeroMode();
   const [ready, setReady] = useState(false);
   const ease = [0.21, 0.47, 0.32, 0.98] as const;
@@ -120,6 +121,17 @@ export function Hero() {
           </a>
           <Link href={LINKS.whitepaper} className="inline-flex h-11 items-center px-2 text-sm text-muted hover:text-bone">
             {t("cta_whitepaper")}
+          </Link>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6">
+          <Link
+            href={LINKS.token}
+            className="inline-flex items-center gap-2 rounded-full border border-amber/40 bg-amber/10 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-amber hover:bg-amber/20"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-amber" />
+            {L("$AGENT live on Flap · 2026-11-20", "$AGENT 已在 Flap 发行 · 2026-11-20")}
+            <ArrowRight size={12} />
           </Link>
         </motion.div>
       </div>

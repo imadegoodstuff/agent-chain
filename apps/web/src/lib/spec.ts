@@ -90,6 +90,45 @@ export const NETWORKS = [
 export const TOKENS = {
   ANTB: "0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53",
   AGENT_ID: "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
+  AGENT: "0x8E3318Ef4411b4488429Ff6970602968D7307777",
+} as const;
+
+/**
+ * $AGENT — LAUNCHED on Flap (BSC mainnet) 2026-11-20. Facts from
+ * apps/chain/deployments/mainnet/agent-token.json. Index / community token:
+ * it does not pay for gas and promises no yield.
+ */
+export const AGENT_TOKEN = {
+  address: "0x8E3318Ef4411b4488429Ff6970602968D7307777",
+  name: "AGENT CHAIN",
+  symbol: "AGENT",
+  decimals: 18,
+  totalSupply: 1_000_000_000,
+  chainId: 56,
+  standard: "ERC-20 · Flap tax token V3",
+  launchedAt: "2026-11-20",
+  launchTx: "0xb9f6a26240c58831c3625650df82d0d58cad61d38789c9267dfe6314fa143365",
+  launchBlock: 134_659_029,
+  launcher: "0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443",
+  portal: "0xe2cE6ab80874Fa9Fa2aAE65D277Dd6B8e65C9De0",
+  taxProcessor: "0x81e26C1d06eF780E95827FbA8D0342E0fB379190",
+  quoteToken: "0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53",
+  quoteSymbol: "ANTB",
+  buyTaxBps: 100,
+  sellTaxBps: 100,
+  taxDurationDays: 365,
+  taxBeneficiary: "0xD800D290F7A87590b9A99295A21dA87D7443FcaB",
+  taxBeneficiaryLabel: "creator treasury wallet",
+  taxSplit: "100% of tax to the creator treasury wallet · 0% burn · 0% dividends · 0% LP",
+  agentIdGate: false,
+  migration: "PancakeSwap V2 at 80% of supply sold (800,000,000 AGENT)",
+  migrationThresholdTokens: 800_000_000,
+  creatorFirstBuy: { antb: "0.6", agent: "15,060,562.91", pctOfSupply: "≈1.5%" },
+  flapUrl: "https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777",
+  dexscreenerUrl: "https://dexscreener.com/bsc/0x8E3318Ef4411b4488429Ff6970602968D7307777",
+  bscscanUrl: "https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777",
+  standingLine: "$AGENT does not pay for gas and promises no yield.",
+  standingLineZh: "$AGENT 不用于支付 gas，也不承诺任何收益。",
 } as const;
 
 export const FEES = {
@@ -155,6 +194,7 @@ export const ROADMAP: readonly {
       "Beta relayer credits Bridge deposits 1:1 on L2 (minutes, by nonce)",
       "Bridge caps 0.1 ANTB/address, 100 ANTB total (raised to 1/500 later in Beta)",
       "Skill published to Binance Skills Hub (PR #425 pending)",
+      { text: "$AGENT launched on Flap (ANTB bonding curve, open to all wallets) · 0x8E33…7777", done: true },
       "Submission to Binance Agent ID Hackathon (deadline Dec 9, 2026)",
     ],
   },
@@ -169,7 +209,7 @@ export const ROADMAP: readonly {
       "Fee keeper live (5-min re-pricing)",
       "Chain owner → Safe multisig",
       "Nitro Inbox replaces Beta escrow bridge; self-service withdrawals",
-      "$AGENT launch on Flap (ANTB pool, open to all wallets)",
+      "$AGENT migration to PancakeSwap V2 at 80% sold (automatic, Flap)",
     ],
   },  {
     phase: "Phase 3",
@@ -225,8 +265,11 @@ export const LINKS = {
   bridge: "/bridge",
   explorer: EXPLORER_URL,
   rpc: RPC_URL,
-  flap: "https://flap.sh",
+  flap: AGENT_TOKEN.flapUrl,
   dexscreener: `https://dexscreener.com/bsc/${TOKENS.ANTB}`,
+  agentDexscreener: AGENT_TOKEN.dexscreenerUrl,
+  agentBscscan: AGENT_TOKEN.bscscanUrl,
+  token: "/#token",
 } as const;
 
 export const DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/tokens/${TOKENS.ANTB}`;

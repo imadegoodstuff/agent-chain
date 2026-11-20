@@ -1,6 +1,10 @@
-# $AGENT — Flap launch sheet (DO NOT LAUNCH until the owner says go)
+# $AGENT — Flap launch sheet — **LAUNCHED 2026-11-20**
 
-Everything below is pre-filled so the launch is a copy-paste job on https://flap.sh/launch (BNB Chain).
+**Status: LAUNCHED.** Token `0x8E3318Ef4411b4488429Ff6970602968D7307777` (`AGENT CHAIN` / `AGENT`, 18 dec, 1,000,000,000 supply) via `Portal.newTokenV6` from chain owner `0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443`, tx `0xb9f6a26240c58831c3625650df82d0d58cad61d38789c9267dfe6314fa143365`, block 134,659,029. Quote token ANTB, tax 1%/1% for 365 days → 100% to `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`, no Agent ID gate, PancakeSwap V2 migration at 80% sold. Creator first buy 0.6 ANTB → 15,060,562.91 AGENT (≈1.5% of supply). Flap: https://flap.sh/bnb/0x8E3318Ef4411b4488429Ff6970602968D7307777 · BscScan: https://bscscan.com/token/0x8E3318Ef4411b4488429Ff6970602968D7307777 · DexScreener (after migration): https://dexscreener.com/bsc/0x8E3318Ef4411b4488429Ff6970602968D7307777. Full record: `apps/chain/deployments/mainnet/agent-token.json`.
+
+**Deviation from this sheet:** `dividendToken` was set to ANTB (the quote token) instead of `address(0)` — the Portal reverts with "dividendToken cannot be zero when quoteToken is ERC20". `dividendBps = 0`, so the dividend tracker is inert and **no dividends are paid**; everything else matches the sheet below.
+
+The sheet below is kept as the approved parameter record. It was executed by `apps/chain/scripts/launch-agent-token.ts`, not through the Flap UI.
 Owner decision 2026-11-20: open launch (no Agent ID gate, no per-wallet cap), tax 1% / 1% paid 100% to `0xD800D290F7A87590b9A99295A21dA87D7443FcaB`, creator first buy = 0.1 BNB worth (0.62 ANTB already swapped into chain owner `0x8D61…A443`, tx 0xbb1ebbab…8960). No Safe migration planned by owner decision; keep disclosing EOA ownership.
 
 ## Token
@@ -57,6 +61,6 @@ Tax allocation (must total 100%):
 
 ## Right after launch
 
-1. Paste the token address into: `SPEC.md` §1, `apps/web/src/lib/spec.ts` (`AGENT_TOKEN`), `skills/agent-chain/references/contracts.md`, `docs/hackathon/SUBMISSION.md`, README tables.
-2. Website Token section flips from "Not launched yet" to live (Flap link + DexScreener).
-3. Post from @agent_chainL2 with the token address and the same risk line; never post a price target.
+1. [x] Token address pasted into `SPEC.md` §1/§8, `apps/web/src/lib/spec.ts` (`AGENT_TOKEN`), `skills/agent-chain/references/contracts.md`, `docs/hackathon/SUBMISSION.md`, README tables (2026-11-20).
+2. [x] Website Token section is live: price in ANTB/USD, curve progress to migration, Buy on Flap, BscScan, DexScreener (enabled after migration), add-to-wallet, tax / treasury / creator-buy disclosures (`/api/token`, 10 s cache).
+3. [ ] Post from @agent_chainL2 with the token address and the same risk line; never post a price target.
