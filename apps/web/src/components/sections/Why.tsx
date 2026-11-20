@@ -109,7 +109,7 @@ function GatePanel() {
     [L("No sybils", "没有女巫"), L("Airdrops, quotas and governance count humans, not keys.", "空投、配额与治理按人计数，而非按密钥。")],
     [L("No sandwiches", "没有三明治攻击"), L("FCFS ordering, no public mempool, tips off. Nothing to front-run.", "先到先得排序，无公开内存池，不收小费。无从抢跑。")],
     [L("Accountable agents", "可问责的 agent"), L("Counterparties are identifiable at the protocol layer, not by heuristics.", "交易对手在协议层可识别，而非靠启发式判断。")],
-    [L("Human genesis", "真人创世"), L("The same registry seeds block 0 (see 03).", "同一份注册表播种第 0 个区块（见 03）。")],
+    [L("Human citizenship", "真人公民"), L("The same credential mints Genesis Seats on BSC, mirrored to the L2 (see 03).", "同一凭证在 BSC 上铸造创世席位并镜像到 L2（见 03）。")],
   ];
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
@@ -178,9 +178,9 @@ function GatePanel() {
 function GenesisPanel() {
   const L = useL();
   const flow = [
-    { t: L("Snapshot", "快照"), d: L("All Binance Agent ID holders on BSC, taken before mainnet.", "主网前对 BSC 上所有 Binance Agent ID 持有者做快照。") },
-    { t: L("Genesis block", "创世区块"), d: L("Holders written into block 0 with a small native ANTB balance.", "持有者被写入第 0 个区块，附带少量原生 ANTB 余额。") },
-    { t: L("Numbered seats", "带编号的席位"), d: L("Each holder receives Genesis Seat #N. Non-transferable.", "每位持有者获得创世席位 #N，不可转让。") },
+    { t: L("Agent ID on BSC", "BSC 上的 Agent ID"), d: L("236,355 holders at the snapshot (block 134,639,601); every one of them is eligible.", "快照时 236,355 位持有者（区块 134,639,601），每一位都有资格。") },
+    { t: L("Claim on BSC", "在 BSC 上领取"), d: L("GenesisSeatClaim.claim() — one soulbound seat per address, numbered by claim order.", "GenesisSeatClaim.claim()——每地址一个灵魂绑定席位，按领取顺序编号。") },
+    { t: L("Mirrored to AGENT CHAIN", "镜像到 AGENT CHAIN"), d: L("The Beta relayer mirrors seat holders into the L2 AgentRegistry on chain 1119 (genesis block is empty).", "Beta relayer 把席位持有者镜像到链 1119 的 L2 AgentRegistry（创世区块为空）。") },
     {
       t: L("Fee allocation", "费用分配"),
       d: L("40% of sequencer fees allocated to seats at launch — a governance parameter, not a promise.", "上线时 40% 的排序器费用分配给席位——这是治理参数，而非承诺。"),
@@ -189,7 +189,7 @@ function GenesisPanel() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="card p-6">
-        <div className="label">{L("From registry to block 0", "从注册表到第 0 个区块")}</div>
+        <div className="label">{L("From Agent ID to AGENT CHAIN", "从 Agent ID 到 AGENT CHAIN")}</div>
         <ol className="relative mt-6 space-y-6 border-l border-line pl-6">
           {flow.map((f, i) => (
             <li key={f.t} className="relative">
@@ -222,15 +222,15 @@ function GenesisPanel() {
           <div className="mt-6 grid grid-cols-2 gap-4 font-mono text-[11px]">
             <div>
               <div className="text-muted">holder</div>
-              <div className="text-bone">Agent ID holder (snapshot)</div>
+              <div className="text-bone">Agent ID holder (claimed on BSC)</div>
             </div>
             <div>
               <div className="text-muted">transfer</div>
               <div className="text-bone">reverts · soulbound</div>
             </div>
             <div>
-              <div className="text-muted">balance at genesis</div>
-              <div className="text-bone">small native ANTB</div>
+              <div className="text-muted">native ANTB</div>
+              <div className="text-bone">via Bridge, relayer-credited</div>
             </div>
             <div>
               <div className="text-muted">fee allocation (governance param)</div>
@@ -242,8 +242,8 @@ function GenesisPanel() {
           {L("On devnet ", "在 Devnet 上，")}
           <code className="font-mono text-bone">GenesisSeat.mint()</code>
           {L(
-            " is open to anyone for testing. On mainnet, seats are claimed on BSC by Agent ID holders (GenesisSeatClaim) and mirrored into block 0. Devnet tokens have no value.",
-            " 对任何人开放以便测试。主网席位由 Agent ID 持有者在 BSC 上领取（GenesisSeatClaim）并镜像进第 0 个区块。Devnet 代币没有任何价值。",
+            " is open to anyone for testing. On mainnet (chain 1119), seats are claimed on BSC by Agent ID holders (GenesisSeatClaim) and mirrored to the L2 by the relayer. Devnet tokens have no value.",
+            " 对任何人开放以便测试。主网（链 1119）席位由 Agent ID 持有者在 BSC 上领取（GenesisSeatClaim）并由 relayer 镜像到 L2。Devnet 代币没有任何价值。",
           )}
         </p>
       </div>
@@ -312,7 +312,7 @@ export function Why() {
   const chapters = [
     { n: "01", t: L("Stock-priced gas", "以股票定价的 gas"), s: L("Fees quoted in USD, settled in ANTB.", "费用以美元报价，以 ANTB 结算。"), C: GasPanel },
     { n: "02", t: L("Human accounts", "真人账户"), s: L("Only Agent ID holders' agents get sequenced.", "只有 Agent ID 持有者的 agent 会被排序。"), C: GatePanel },
-    { n: "03", t: L("Genesis", "创世"), s: L("Citizens are inside block 0.", "公民就在第 0 个区块里。"), C: GenesisPanel },
+    { n: "03", t: L("Genesis", "创世"), s: L("Seats on BSC, mirrored to the L2.", "席位在 BSC 上领取，镜像到 L2。"), C: GenesisPanel },
     { n: "04", t: L("Built for agents", "为 agent 而建"), s: L("Receipts, paymaster, session keys, standards.", "回执、Paymaster、会话密钥、标准。"), C: AgentsPanel },
   ];
   const [active, setActive] = useState(0);

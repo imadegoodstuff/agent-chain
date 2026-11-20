@@ -110,14 +110,17 @@ export function Hero() {
           transition={{ duration: 0.8, ease, delay: 0.28 }}
           className="mt-10 flex flex-wrap items-center gap-3"
         >
-          <Link href={LINKS.whitepaper} className="btn-primary">
-            {t("cta_whitepaper")}
+          <Link href={`${LINKS.genesis}#agent`} className="btn-primary">
+            {t("cta_agent")}
             <ArrowRight size={15} />
           </Link>
           <a href={LINKS.explorer} target="_blank" rel="noreferrer" className="btn-ghost">
             {t("cta_explorer")}
             <ArrowUpRight size={15} className="text-muted" />
           </a>
+          <Link href={LINKS.whitepaper} className="inline-flex h-11 items-center px-2 text-sm text-muted hover:text-bone">
+            {t("cta_whitepaper")}
+          </Link>
         </motion.div>
       </div>
 

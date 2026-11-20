@@ -1,6 +1,6 @@
 "use client";
 
-import { DEVNET } from "@/lib/spec";
+import { DEVNET, MAINNET } from "@/lib/spec";
 
 type Eip1193 = {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<unknown>;
@@ -33,13 +33,25 @@ export async function ensureDevnet(p: Eip1193): Promise<void> {
   }
 }
 
-export async function addDevnet(): Promise<"added" | "no-wallet" | "rejected"> {
+export const MAINNET_CHAIN_PARAMS = {
+  chainId: MAINNET.chainIdHex,
+  chainName: MAINNET.name,
+  nativeCurrency: { name: "ANTB", symbol: MAINNET.symbol, decimals: 18 },
+  rpcUrls: [MAINNET.rpc],
+  blockExplorerUrls: [MAINNET.explorer],
+};
+
+async function addChain(params: typeof DEVNET_CHAIN_PARAMS | typeof MAINNET_CHAIN_PARAMS): Promise<"added" | "no-wallet" | "rejected"> {
   const p = getProvider();
   if (!p) return "no-wallet";
   try {
-    await p.request({ method: "wallet_addEthereumChain", params: [DEVNET_CHAIN_PARAMS] });
+    await p.request({ method: "wallet_addEthereumChain", params: [params] });
     return "added";
   } catch {
     return "rejected";
   }
 }
+
+export const addDevnet = () => addChain(DEVNET_CHAIN_PARAMS);
+/** Adds AGENT CHAIN mainnet (chain 1119, ANTB) to the injected wallet. */
+export const addMainnet = () => addChain(MAINNET_CHAIN_PARAMS);

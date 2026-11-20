@@ -1,8 +1,9 @@
 "use client";
 
-import { useStats } from "@/hooks/useStats";
+import { useL2 } from "@/hooks/useL2";
+import { useBsc } from "@/hooks/useBsc";
 import { usePrice } from "@/hooks/usePrice";
-import { useLang } from "../LangProvider";
+import { useL, useLang } from "../LangProvider";
 import { fmtInt, fmtPct, fmtSmall, fmtUsd } from "@/lib/format";
 import { TRANSFER_USD } from "@/lib/spec";
 
@@ -19,30 +20,34 @@ function Cell({ label, value, sub, live }: { label: string; value: React.ReactNo
   );
 }
 
+/** Bottom-of-hero HUD: AGENT CHAIN mainnet (chain 1119) live numbers. */
 export function HeroHud() {
   const { t } = useLang();
-  const s = useStats(3000);
+  const L = useL();
+  const l2 = useL2(5000);
+  const b = useBsc(15_000);
   const p = usePrice();
   const connecting = <span className="text-muted">{t("connecting")}</span>;
-  const feeAntb = TRANSFER_USD / p.usd;
+  const gasWei = l2?.l2 ? BigInt(l2.l2.gasPriceWei) : null;
+  const feeAntb = gasWei !== null ? Number(gasWei * 21_000n) / 1e18 : TRANSFER_USD / p.usd;
+  const feeUsd = feeAntb * p.usd;
 
   return (
     <div className="container-site">
       <div className="hairline flex divide-x divide-line overflow-x-auto [scrollbar-width:none]">
         <Cell
           label={t("live_block")}
-          live={!!s?.ok}
-          value={s?.ok && s.block !== null ? `#${fmtInt(s.block)}` : connecting}
-          sub={s?.ok ? `chain ${s.chainId ?? "11190"} · 250 ms` : "devnet · chain 11190"}
+          live={!!l2?.ok}
+          value={l2?.l2 ? `#${fmtInt(l2.l2.block)}` : connecting}
+          sub={l2?.l2 ? `chain 1119 · 250 ms · mainnet beta` : "mainnet · chain 1119"}
         />
         <Cell
-          label={t("live_bps")}
-          value={s?.ok && s.blocksPerSec ? s.blocksPerSec.toFixed(2) : s?.ok ? <span className="text-muted">measuring…</span> : connecting}
-          sub={s?.ok && s.blockTimeMs ? `≈ ${s.blockTimeMs} ms / block` : "target 4.00"}
+          label={L("Batches · BSC", "批次 · BSC")}
+          live={l2?.parent?.batchCount !== null && l2?.parent?.batchCount !== undefined}
+          value={l2?.parent?.batchCount !== null && l2?.parent?.batchCount !== undefined ? fmtInt(l2.parent.batchCount) : connecting}
+          sub="SequencerInbox.batchCount()"
         />
-        {s?.ok && s.seats !== null && (
-          <Cell label={t("live_seats")} value={fmtInt(s.seats)} sub="minted on devnet" />
-        )}
+        <Cell label={t("live_seats")} live={!!b?.ok} value={b?.seats ? fmtInt(b.seats.totalSeats) : connecting} sub={L("claimed on BSC", "在 BSC 上领取")} />
         <Cell
           label={t("live_antb")}
           live={p.live}
@@ -55,11 +60,7 @@ export function HeroHud() {
             )
           }
         />
-        <Cell
-          label={t("live_fee")}
-          value={`≈ $${TRANSFER_USD.toFixed(4)}`}
-          sub={`${fmtSmall(feeAntb, 2)} ANTB · 21,000 gas`}
-        />
+        <Cell label={t("live_fee")} value={`≈ $${feeUsd.toFixed(4)}`} sub={`${feeAntb.toFixed(12).replace(/0+$/, "")} ANTB · 21,000 gas`} />
       </div>
     </div>
   );

@@ -102,8 +102,8 @@ export function Speed() {
           <Terminal />
           <p className="mt-4 text-xs leading-relaxed text-muted">
             {L(
-              "Sequencer in Singapore. No public mempool, tips off. Latency figures are design targets for the sequencer path; devnet today is a single node with 250 ms interval mining.",
-              "排序器位于新加坡。无公开内存池，不收小费。延迟数字是排序器路径的设计目标；当前 Devnet 是单节点、250 ms 间隔出块。",
+              "Sequencer in Singapore. No public mempool, tips off. Mainnet Beta (chain 1119) runs a single Nitro sequencer with 250 ms blocks; preconfirmation receipts and 50 ms sub-blocks are Phase 3 targets.",
+              "排序器位于新加坡。无公开内存池，不收小费。主网 Beta（链 1119）由单个 Nitro 排序器以 250 ms 出块；预确认回执与 50 ms 子块是 Phase 3 的目标。",
             )}
           </p>
         </Reveal>

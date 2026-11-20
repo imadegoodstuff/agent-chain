@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { disclaimers, LINKS, RPC_URL } from "@/lib/spec";
+import { DEVNET_RPC_URL, disclaimers, LINKS, RPC_URL } from "@/lib/spec";
 import { HexMark } from "./Logo";
 import { useL, useLang } from "./LangProvider";
 
@@ -25,8 +25,9 @@ export function Footer() {
       title: t("footer_build"),
       links: [
         { label: L("Builders", "开发者"), href: LINKS.builders },
-        { label: L("Devnet RPC", "Devnet RPC"), href: RPC_URL, external: true },
-        { label: L("Chain ID 11190", "链 ID 11190"), href: "/builders#network" },
+        { label: L("Mainnet RPC", "主网 RPC"), href: RPC_URL, external: true },
+        { label: L("Devnet RPC (test)", "Devnet RPC（测试）"), href: DEVNET_RPC_URL, external: true },
+        { label: L("Chain ID 1119", "链 ID 1119"), href: "/builders#network" },
         { label: L("BSC mainnet contracts", "BSC 主网合约"), href: "/builders#mainnet-contracts" },
         { label: "Arbitrum Nitro", href: "https://docs.arbitrum.io/", external: true },
         { label: "Stylus", href: "https://docs.arbitrum.io/stylus/gentle-introduction", external: true },
@@ -54,13 +55,13 @@ export function Footer() {
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
               {L(
-                "Agent-native Layer 2 on BNB Smart Chain. Arbitrum Nitro stack. Gas priced in Anthropic. Accounts are Binance Agent IDs.",
-                "面向 agent 的 BNB Smart Chain Layer 2。Arbitrum Nitro 技术栈。Gas 以 Anthropic 计价。账户即 Binance Agent ID。",
+                "Agent-native Layer 2 on BNB Smart Chain, live in Mainnet Beta (chain 1119). Arbitrum Nitro stack. Gas priced in Anthropic. Accounts are Binance Agent IDs.",
+                "面向 agent 的 BNB Smart Chain Layer 2，主网 Beta 已上线（链 1119）。Arbitrum Nitro 技术栈。Gas 以 Anthropic 计价。账户即 Binance Agent ID。",
               )}
             </p>
             <div className="mt-6 flex items-center gap-2 font-mono text-[11px] tracking-wider text-muted">
               <span className="h-1.5 w-1.5 rounded-full bg-green" />
-              DEVNET · CHAIN 11190 · SIN
+              MAINNET BETA · CHAIN 1119 · SIN
             </div>
           </div>
           {cols.map((c) => (

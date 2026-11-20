@@ -155,7 +155,7 @@ export function BridgeDisclosures({ compact = false }: { compact?: boolean }) {
       </div>
       <ul className={`mt-3 space-y-2 leading-relaxed text-bone/90 ${compact ? "text-[13px]" : "text-sm"}`}>
         <li>
-          <span className="text-bone">Genesis Deposit.</span> {BRIDGE_DISCLOSURES.genesisDeposit.replace("Genesis Deposit: ", "")}
+          <span className="text-bone">Relayer credit.</span> {BRIDGE_DISCLOSURES.genesisDeposit.replace("Relayer credit: ", "")}
         </li>
         <li>
           <span className="text-bone">Beta escrow.</span> {BRIDGE_DISCLOSURES.escrow.replace("Beta escrow: ", "")}{" "}
@@ -168,7 +168,7 @@ export function BridgeDisclosures({ compact = false }: { compact?: boolean }) {
           <span className="text-bone">Trading / price risk.</span> {BRIDGE_DISCLOSURES.trading.replace("Trading / price risk: ", "")}
         </li>
         <li>
-          <span className="text-bone">Not live yet.</span> {BRIDGE_DISCLOSURES.notLive}
+          <span className="text-bone">Beta.</span> {BRIDGE_DISCLOSURES.notLive}
         </li>
       </ul>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px]">
@@ -181,6 +181,39 @@ export function BridgeDisclosures({ compact = false }: { compact?: boolean }) {
   );
 }
 
+/** Three compact audit disclosures shown next to every deposit entry point (browser wallet and agent tabs). */
+export function BridgeRiskBullets() {
+  const L = useL();
+  return (
+    <ul className="space-y-1.5 rounded-md border border-amber/30 bg-amber/[0.06] p-3 text-[12px] leading-relaxed text-bone/85">
+      <li className="flex gap-2">
+        <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
+        <span>
+          {L("Beta escrow: the owner key can withdraw (", "Beta 托管：owner 密钥可以提走资金（")}
+          <code className="font-mono text-bone">withdrawTo</code>
+          {L("); owner is currently a single EOA ", "）；owner 目前是单个 EOA ")}
+          <a href={bscAddr(BSC_OWNER)} target="_blank" rel="noreferrer" className="font-mono text-amber hover:underline">
+            {shortAddr(BSC_OWNER, 4)}
+          </a>
+          {L(" and will move to a multisig.", "，后续将迁移到多签。")}
+        </span>
+      </li>
+      <li className="flex gap-2">
+        <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
+        <span>
+          {L(
+            "ANTB is an upgradeable token controlled by its issuer; it can be paused or compliance-restricted. Deposits are credited by raw token units 1:1.",
+            "ANTB 是由发行方控制的可升级代币，可能被暂停或受合规限制。存款按原始代币单位 1:1 入账。",
+          )}
+        </span>
+      </li>
+      <li className="flex gap-2">
+        <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
+        <span>{L("There is no self-service refund in the Beta bridge.", "Beta 桥没有自助退款。")}</span>
+      </li>
+    </ul>
+  );
+}
 export function BridgeApp() {
   const L = useL();
   const w = useWallet();
@@ -290,7 +323,7 @@ export function BridgeApp() {
   return (
     <div className="card relative min-w-0 p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="label">{L("Genesis Deposit · BSC → AGENT CHAIN block 0", "创世存款 · BSC → AGENT CHAIN 第 0 个区块")}</div>
+        <div className="label">{L("Deposit · BSC → AGENT CHAIN (chain 1119)", "存款 · BSC → AGENT CHAIN（链 1119）")}</div>
         <span
           className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-wider ${
             bsc?.bridge ? (paused ? "border-red/40 bg-red/10 text-red" : "border-green/40 bg-green/10 text-green") : "border-line text-muted"
@@ -400,7 +433,7 @@ export function BridgeApp() {
             <div className={`rounded-lg border border-line bg-surface-2 p-4 ${eligible !== true ? "opacity-60" : ""}`}>
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                 <span className="label">{L("L2 recipient", "L2 接收地址")}</span>
-                <span className="font-mono text-[11px] text-muted">{L("AGENT CHAIN mainnet (chain ID 1119, launching)", "AGENT CHAIN 主网（链 ID 1119，即将上线）")}</span>
+                <span className="font-mono text-[11px] text-muted">{L("AGENT CHAIN mainnet (chain 1119)", "AGENT CHAIN 主网（链 1119）")}</span>
               </div>
               <input
                 value={recipient}
@@ -420,7 +453,7 @@ export function BridgeApp() {
                 ) : recipient && w.address && recipient.toLowerCase() !== w.address.toLowerCase() ? (
                   <span className="text-amber">Different from the connected address — it must hold an Agent ID to transact on AGENT CHAIN.</span>
                 ) : (
-                  <span className="text-muted">{L("Defaults to the connected address. Credited as native ANTB in block 0.", "默认为已连接地址。将在第 0 个区块以原生 ANTB 入账。")}</span>
+                  <span className="text-muted">{L("Defaults to the connected address. Credited as native ANTB on chain 1119 by the relayer (minutes).", "默认为已连接地址。由 relayer 在链 1119 上以原生 ANTB 入账（数分钟内）。")}</span>
                 )}
               </div>
               {recipientOk && recipientIsContract === null && (
@@ -436,13 +469,13 @@ export function BridgeApp() {
                   </div>
                   <p className="mt-1 text-bone/80">
                     {L(
-                      "It will have no code on AGENT CHAIN; funds credited there may be unrecoverable. Use an EOA.",
+                      "It will have no code on AGENT CHAIN (chain 1119); funds credited there may be unrecoverable. Use an EOA.",
                       "它在 AGENT CHAIN 上不会有任何代码；入账到该地址的资金可能无法找回。请使用 EOA（外部账户）。",
                     )}
                   </p>
                   <label className="mt-2 flex cursor-pointer items-start gap-2 text-[12px] text-bone">
                     <input type="checkbox" checked={contractAck} onChange={(e) => setContractAck(e.target.checked)} className="mt-0.5 h-3.5 w-3.5 accent-[#E5604F]" />
-                    {L("I understand this address is a contract on BSC and I still want to credit it in block 0.", "我明白该地址是 BSC 上的合约，仍要在第 0 个区块向其入账。")}
+                    {L("I understand this address is a contract on BSC and I still want to credit it on AGENT CHAIN.", "我明白该地址是 BSC 上的合约，仍要在 AGENT CHAIN 上向其入账。")}
                   </label>
                 </div>
               )}
@@ -454,33 +487,7 @@ export function BridgeApp() {
         <div>
           <StepLabel n="04" title={needsApprove ? L("Approve exact amount, then deposit", "先精确授权，再存入") : L("Deposit", "存入")} state={stepTx} />
           <div className="mt-3 space-y-3 pl-9">
-            <ul className="space-y-1.5 rounded-md border border-amber/30 bg-amber/[0.06] p-3 text-[12px] leading-relaxed text-bone/85">
-              <li className="flex gap-2">
-                <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
-                <span>
-                  {L("Beta escrow: the owner key can withdraw (", "Beta 托管：owner 密钥可以提走资金（")}
-                  <code className="font-mono text-bone">withdrawTo</code>
-                  {L("); owner is currently a single EOA ", "）；owner 目前是单个 EOA ")}
-                  <a href={bscAddr(BSC_OWNER)} target="_blank" rel="noreferrer" className="font-mono text-amber hover:underline">
-                    {shortAddr(BSC_OWNER, 4)}
-                  </a>
-                  {L(" and will move to a multisig.", "，后续将迁移到多签。")}
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
-                <span>
-                  {L(
-                    "ANTB is an upgradeable token controlled by its issuer; it can be paused or compliance-restricted. Deposits are credited by raw token units 1:1.",
-                    "ANTB 是由发行方控制的可升级代币，可能被暂停或受合规限制。存款按原始代币单位 1:1 入账。",
-                  )}
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <ShieldAlert size={12} className="mt-[3px] shrink-0 text-amber" />
-                <span>{L("There is no self-service refund in the Beta bridge.", "Beta 桥没有自助退款。")}</span>
-              </li>
-            </ul>
+            <BridgeRiskBullets />
             <button type="button" disabled={!canSubmit} onClick={() => void submit()} className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50">
               {busy && <Loader2 size={15} className="animate-spin" />}
               {flow.k === "switching"
@@ -522,7 +529,7 @@ export function BridgeApp() {
                           </div>
                           <div className="mt-1">
                             {fmtWei(flow.amount, 6)} ANTB {L("will be credited to", "将入账到")}{" "}
-                            <span className="font-mono">{shortAddr(flow.l2Recipient, 5)}</span> {L("in block 0.", "（第 0 个区块）。")}
+                            <span className="font-mono">{shortAddr(flow.l2Recipient, 5)}</span> {L("on chain 1119 by the relayer, usually within minutes.", "，由 relayer 在链 1119 上入账，通常数分钟内到账。")}
                           </div>
                         </>
                       ) : (
@@ -568,7 +575,7 @@ export function DepositsTable() {
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3">
         <span className="label flex items-center gap-2">
           <span className={`h-1.5 w-1.5 rounded-full ${bsc?.ok ? "bg-green animate-blink" : "bg-line"}`} />
-          Genesis Deposits · latest {rows.length ? rows.length : ""} Deposited events
+          Deposits · latest {rows.length ? rows.length : ""} Deposited events
         </span>
         <span className="font-mono text-[11px] text-muted">
           from block #{fmtInt(BSC_DEPLOY_BLOCKS.Bridge)} · {bsc?.sync?.depositsComplete ? "synced" : bsc ? "syncing…" : "…"}
@@ -606,7 +613,7 @@ export function DepositsTable() {
             {!rows.length && (
               <tr className="border-t border-line/60">
                 <td colSpan={6} className="px-5 py-8 text-center text-muted">
-                  {bsc === null ? "connecting…" : bsc.ok ? "No Genesis Deposits yet. The first deposit gets nonce 0." : `rpc ${bsc.error ?? "unreachable"}`}
+                  {bsc === null ? "connecting…" : bsc.ok ? "No deposits yet. The first deposit gets nonce 0." : `rpc ${bsc.error ?? "unreachable"}`}
                 </td>
               </tr>
             )}

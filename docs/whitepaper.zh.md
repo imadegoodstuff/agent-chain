@@ -1,11 +1,11 @@
 ---
 title: "AGENT CHAIN 白皮书"
-version: 0.1
+version: 0.2
 date: 2026-11-20
 lang: zh
 ---
 
-# AGENT CHAIN 白皮书 v0.1
+# AGENT CHAIN 白皮书 v0.2
 
 **智能即燃料。** 区块空间以 Anthropic 计价，每个账户背后是一个真人的 agent。
 
@@ -19,9 +19,9 @@ AGENT CHAIN 是构建在 BNB Smart Chain（BSC）之上、面向 agent 原生场
 
 第二，排序器（sequencer）只打包持有 **Binance Agent ID**（BSC 上的 ERC-721，每位 KYC 真人一枚，不可转让）或 BAB 代币的地址发出的交易。因此 AGENT CHAIN 上的每一个地址都是某位已验证真人的 agent。没有机器人，没有女巫，没有三明治攻击——这反过来允许激进的性能配置：250 ms 出块、先到先服务排序、无公共内存池、关闭优先费。
 
-第三，**创世由真人构成**。主网上线前，BSC 上所有 Agent ID 持有者被快照并写入 0 号区块，每人获得一枚编号的 Genesis Seat（创世席位）与一小笔原生 ANTB。席位是身份与优先权凭证；上线时的费用分配将 40% 的排序器费用分配给席位，这是治理可调整的协议参数（见第 8、10 节），不是收益承诺。
+第三，**公民由真人构成**。BSC 上的每位 Agent ID 持有者都可以在 `GenesisSeatClaim` 合约中领取一枚编号、不可转让的 Genesis Seat（创世席位）；席位持有者与注册表条目由 Beta relayer 镜像到 L2。席位是身份与优先权凭证；将 40% 排序器费用分配给席位的费用分配是治理可调整的协议参数（见第 8、10 节），不是收益承诺。
 
-本文描述 AGENT CHAIN v0.1 的架构、费用模型、身份层、创世流程、账户抽象、延迟目标、代币与费用流、agent 基础设施、路线图及风险。Devnet（链 ID 11190）已上线；Testnet（Phase 1）与 Mainnet Beta（Phase 2）计划于 2026 年 12 月上线。
+本文描述 AGENT CHAIN 的架构、费用模型、身份层、创世与公民流程、账户抽象、延迟目标、代币与费用流、agent 基础设施、路线图及风险。**主网 Beta（链 ID 1119）已于 2026-11-20 上线**：Arbitrum Nitro v3.12.4 / ArbOS 61 rollup，结算到 BSC，ANTB 为原生 gas，单排序器、BoLD 验证、Agent ID 网关 RPC。Devnet（链 ID 11190，测试代币）继续保留。
 
 ## 01 为什么需要一条 agent 链
 
@@ -59,7 +59,7 @@ AGENT CHAIN 用结构而非政策解决这三项要求：
 2. **每个账户都是真人的 agent。** 打包交易须持有 Binance Agent ID 或 BAB 代币。身份在排序器层强制执行，而非依赖社区约定。
 3. **继承安全性，不自造安全性。** AGENT CHAIN 是结算到 BSC 的 Nitro rollup，使用 BoLD 欺诈证明。没有新共识、没有新虚拟机、没有新的桥设计。
 4. **通过移除对手而非增加信任来提速。** 因为女巫和三明治在结构上被排除，链可以运行 FCFS、无内存池、无优先费，而不会打开 MEV 攻击面。
-5. **带着公民启动，而不是带着金库启动。** 创世把席位和少量 ANTB 分配给每位 Agent ID 持有者。0 号区块里没有写给内部人的预挖。
+5. **带着公民启动，而不是带着金库启动。** 创世区块是空的：没有预挖，没有内部人分配。L2 上每一枚原生 ANTB 都对应 BSC 上的一笔存款，每位公民都用自己的 Agent ID 领取创世席位进入。
 6. **写明每一个数字和每一项风险。** 参数集中在一张表里（第 14 节）。对第三方（ANTB 发行方、BSC、Arbitrum 技术栈、预言机）的依赖逐项列出并附应对（第 13 节）。
 
 ## 03 架构
@@ -106,17 +106,34 @@ AGENT CHAIN 以 **rollup 模式**运行 Arbitrum Nitro：每一批 L2 交易都�
 
 ### 3.6 网络参数
 
-| | Devnet（已上线） | Testnet（Phase 1） | Mainnet（Phase 2） |
+| | 主网 Beta（2026-11-20 上线） | Devnet（测试数据） | Testnet（预发布） |
 |---|---|---|---|
-| 名称 | AGENT CHAIN Devnet | AGENT CHAIN Testnet | AGENT CHAIN |
-| 链 ID | `11190`（0x2BB6） | `111900` | `1119`（已预留） |
-| RPC | `https://rpc.agent-chain.agency` | 待公布 | 待公布 |
-| 浏览器 | `https://explorer.agent-chain.agency` | 待公布 | 待公布 |
-| Gas 代币 | tANTB（测试用，无价值） | tANTB | ANTB |
-| 父链 | —（单节点） | BSC Testnet（97） | BSC（56） |
+| 名称 | AGENT CHAIN | AGENT CHAIN Devnet | AGENT CHAIN Testnet |
+| 链 ID | `1119`（0x45F） | `11190`（0x2BB6） | `111900` |
+| RPC | `https://rpc.agent-chain.agency`（Agent ID 网关；备用 `https://agentchain-gateway.fly.dev`） | `https://devnet-rpc.agent-chain.agency` | 待公布 |
+| 浏览器 | `https://explorer.agent-chain.agency` | `https://devnet-explorer.agent-chain.agency` | 待公布 |
+| Gas 代币 | ANTB（18 位小数） | tANTB（测试用，无价值） | tANTB |
+| 父链 | BSC（56）· Nitro rollup | —（单节点） | BSC Testnet（97） |
+| 技术栈 | Arbitrum Nitro v3.12.4 · ArbOS 61 | Hardhat 节点 | Nitro |
 | 出块时间 | 250 ms | 250 ms | 250 ms |
 
-官网：`https://agent-chain.agency`。Devnet 代币没有价值。
+主网 RPC 说明：不持有 Agent ID（或 BAB）的发送方会被网关拒绝，JSON-RPC 错误码 `-32050`；`eth_getLogs` 可用；**不支持** `finalized` 与 `safe` 区块标签（BSC 不向 Nitro 暴露最终性）——请使用 `latest`。官网：`https://agent-chain.agency`。Devnet 代币没有价值。
+
+主网核心合约（BSC，由 `RollupCreator.createRollup` 创建，交易 `0xd99b52c896685fe301f6bac7b6b0c60ff49546c931f1177473fd152959fa115f`，区块 134,648,658）：
+
+| 合约 | 地址 |
+|---|---|
+| Rollup（BoLD） | `0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85` |
+| Inbox | `0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6` |
+| SequencerInbox | `0x165108EcA9Fd180328856c0FE518F2BCAb5bd7E8` |
+| Bridge（Nitro） | `0x337B50dB3A8b2EF587fd4AB47cF27C2A960b9dFd` |
+| Outbox | `0x763a4E77d0d0E300dba7527C402947aC86fc6fB3` |
+| UpgradeExecutor | `0x6B338a6b72fcED9306585aC2586664192958EF1B` |
+| ChallengeManager | `0x1E3256Fd2ACde0086f3B9c688Ea82C9742140179` |
+| RollupCreator（BSC 修补版） | `0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70` |
+| 费用代币定价器 | `0x132fa6bcc47d0dd51e93d6bde0cb8ee4ca8252aa` |
+
+角色：链 owner `0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443`（EOA，同时是 L2 基础设施手续费账户——计划迁移到 Safe 多签）、批次发布者 `0xC7b182073535A8aA849b304Caf834f81aD0F253F`、验证者 `0xc33dCf1d3314506B0f4b06E20bEdC7690c53e78F`（基础质押 0.02 WBNB）、排序器 `0xc464b85A4124CA92168ed865078514850b3C1072`。
 
 ## 04 Gas 资产：ANTB
 
@@ -150,11 +167,11 @@ ANTB 通过 Nitro 自定义 gas 代币桥以 1:1 桥接。向 BSC 上的桥托�
 L2 上的原生 ANTB 供应量  +  进行中的提款 ANTB  ≤  BSC 托管合约中的 ANTB
 ```
 
-创世分配（第 07 节）是唯一不由存款铸造的原生 ANTB；运营方会在开放桥之前把对应数量的 ANTB 存入托管合约，因此不变式自 0 号区块起即成立。
+创世区块为空，因此不变式自第一个区块起即成立：L2 上每一单位原生 ANTB 都来自 BSC 上的存款。主网 Beta 期间，通过 Beta `Bridge` 合约（`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`）的存款由 **Beta relayer** 在 L2 上 1:1 入账，通常数分钟内完成，严格按存款 nonce 顺序；Nitro 标准的 `ERC20Inbox` 路径目前由运营方使用，待提款 UI 就绪后将取代 Beta 托管。
 
 ### 4.4 Mainnet Beta 期间的上限
 
-Phase 2（Mainnet Beta）期间，存款上限为**每地址 1 ANTB**、**总量 500 ANTB**。上限在 Phase 4 取消。
+主网 Beta 期间，Beta 桥的存款上限为**每地址 0.1 ANTB**、**总量 100 ANTB**（owner 可调，Beta 验证后提高到 1 / 500）。上限在 Phase 4 取消。
 
 ### 4.5 发行方风险
 
@@ -273,21 +290,21 @@ Agent ID 的 handle 是**公开别名**。注册表存储 handle 的哈希，而
 
 ## 07 创世
 
-### 7.1 快照
+### 7.1 快照与领取
 
-主网上线前，会提前公布 BSC 上的一个**快照区块**。在该区块，所有持有 Binance Agent ID 的地址及其首次注册顺序被记录下来。
+Agent ID 持有者的**快照**已于 BSC 区块 134,639,601（2026-11-20）完成：**236,355 位持有者**，每一位都有资格。公民身份靠行使而非空投：每位持有者在 BSC 上调用 `GenesisSeatClaim.claim()`（`0x3972579dd0128BF0b6778cB3B457ba1d14D1695b`）领取下一个顺序席位。
 
-### 7.2 创世分配
+### 7.2 创世状态与镜像
 
-AGENT CHAIN（链 ID 1119）的创世状态为每个快照地址包含：
+AGENT CHAIN（链 ID 1119）的创世区块是**空的**——没有余额，没有预挖。公民状态记录在 BSC 上并镜像到 L2：
 
 | 项目 | 说明 |
 |---|---|
-| Genesis Seat | 一枚不可转让的 `GenesisSeat` 代币，`seatId` 顺序编号 |
-| 席位编号 | 按 Agent ID 在 BSC 上的首次注册顺序 |
-| 原生 ANTB | 一小笔原生 ANTB，足够完成初始交易；具体数量随快照区块一同公布 |
+| Genesis Seat | 每位 Agent ID / BAB 持有者一枚不可转让的 `GenesisSeatClaim` 代币（ERC-721 `SEAT`），`seatId` 按领取顺序编号，元数据（含 SVG）全部链上 |
+| 注册表 | BSC 上的 `AgentRegistryMirror.register()`（可选、永久）；由 relayer 镜像到 L2 `AgentRegistry` |
+| 原生 ANTB | 仅通过桥：BSC 上的存款由 Beta relayer 按 nonce 顺序在 L2 上 1:1 入账 |
 
-每次分配触发 `SeatMinted(address, uint256)` 事件。Devnet 上 `mint()` 对任何地址开放一次；Mainnet 上铸造仅限创世分配与 Agent ID 持有者。
+`GenesisSeatClaim` 触发 `SeatClaimed(address indexed holder, uint256 indexed seatId)` 事件。Devnet 上的测试合约 `GenesisSeat.mint()` 对任何地址开放一次，与主网席位无关。
 
 ### 7.3 席位经济
 
@@ -427,9 +444,9 @@ Phase 3 预部署一组标准端点。对 agent 开发者而言，每一项都�
 
 | 阶段 | 名称 | 目标时间 | 交付内容 |
 |---|---|---|---|
-| 0 | Devnet | 已上线，2026 年 11 月 | 单节点 devnet、250 ms 出块、公开 RPC + 浏览器、AgentRegistry + GenesisSeat 合约、官网、白皮书 v0.1 |
-| 1 | BSC Testnet 上的 Testnet | 2026 年 12 月 | 结算到 BSC Testnet 的 Nitro rollup、tANTB 作为自定义 gas 代币、桥 + 水龙头、Agent ID 门控排序、paymaster（用 BNB/USDT 支付）、费用守护进程上线、技能发布到 Binance Skills Hub |
-| 2 | Mainnet Beta | 2026 年 12 月 | Agent ID 快照 → 创世 → 在 BSC 上发射。ANTB 原生 gas。Beta 期间桥上限（每地址 1 ANTB，总量 500 ANTB）。$AGENT 在 Flap 发射（ANTB 池，Agent ID 门控）。提交 Binance Agent ID Hackathon（截止 2026 年 12 月 9 日） |
+| 0 | Devnet | 已完成，2026 年 11 月 | 单节点 devnet（现为 `devnet-rpc.agent-chain.agency`）、250 ms 出块、AgentRegistry + GenesisSeat 测试合约、官网、白皮书 v0.1 |
+| 1 | BSC 上的主网 Beta | **已上线，2026-11-20** | Nitro v3.12.4 / ArbOS 61 rollup，链 1119，ANTB 原生 gas（最低基础费用 493,366,955 wei），BSC 合约 AgentRegistryMirror / GenesisSeatClaim / Bridge，Agent ID 网关 RPC，BoLD 验证，单排序器，Beta relayer 为桥存款入账，上限 0.1 / 100 ANTB |
+| 2 | Beta 加固 | 2026 年 12 月 | BSC Testnet 上的 Testnet（111900）作为预发布环境、paymaster（用 BNB/USDT 支付）、费用守护进程上线、链 owner 迁移到 Safe、Nitro Inbox 取代 Beta 托管桥并提供自助提款、技能在 Binance Skills Hub 上架、$AGENT 在 Flap 发射（ANTB 池，对所有钱包开放）、提交 Hackathon（2026 年 12 月 9 日） |
 | 3 | 流式预确认 | 2027 Q1 | 通过排序器 feed 的 50 ms 流式子块、多区域边缘 RPC（SIN/TYO/FRA/IAD）、ERC-8004 agent 注册表 + x402 协调器 + MCP 端点预部署、Stylus agent SDK |
 | 4 | 扩展与结算 | 2027 年 | 吞吐量需要时升级执行引擎；Arbitrum 技术栈交付后切换 ZK 有效性结算；外部验证者；取消桥上限 |
 
@@ -441,7 +458,7 @@ Phase 3 预部署一组标准端点。对 agent 开发者而言，每一项都�
 
 ANTB 是带有发行方暂停与黑名单功能的 beacon-proxy 可升级代币。发行方可以暂停转账、把桥托管合约列入黑名单，或升级代币逻辑。
 
-**应对。** L2 执行不依赖 BSC 上的代币合约；暂停会停止存取款，但不会停止出块。Mainnet Beta 上限（每地址 1 ANTB，总量 500 ANTB）限定了总敞口。托管地址公开，用户可自行监控其状态。AGENT CHAIN 独立于发行方，不对 ANTB 的条款作任何陈述；用户应参考发行方的文档与资格规则。
+**应对。** L2 执行不依赖 BSC 上的代币合约；暂停会停止存取款，但不会停止出块。Mainnet Beta 上限（每地址 0.1 ANTB，总量 100 ANTB）限定了总敞口。托管地址公开，用户可自行监控其状态。AGENT CHAIN 独立于发行方，不对 ANTB 的条款作任何陈述；用户应参考发行方的文档与资格规则。
 
 ### R02 —— 预言机与流动性
 
@@ -471,11 +488,16 @@ AGENT CHAIN 的数据可用性与结算强度等同于 BSC。BSC 的停机、超
 
 Nitro 的文档面向以太坊与 Arbitrum 父链。在 BSC（不同客户端、不同最终性语义）上运行它经受的测试较少。
 
-**应对。** Phase 1 在任何真实价值暴露之前，先在 BSC Testnet 上运行完整技术栈。主网以带桥上限的 Beta 形式上线。与 Nitro 默认值的偏差被记录并公布。Arbitrum 技术栈的上游变更被跟踪并保守采纳。
+**应对。** 主网以带桥上限的 Beta 形式运行，BSC Testnet 预发布网络在 Phase 2 跟进。与 Nitro 默认值的偏差记录在 `apps/chain/RESEARCH.md` 并在下方工程说明中总结。Arbitrum 技术栈的上游变更被跟踪并保守采纳。
+
+**工程说明——BSC 要求我们做了什么（2026-11-20）。** 以 BSC 作为父链启动 Nitro 的两个具体发现：
+
+1. *`ArbitrumChecker` 与 BSC 地址 `0x64`。* nitro-contracts 通过探测地址 `0x64`（ArbSys）判断“我是否运行在 Arbitrum 上”。在 BSC 上该地址是一个已退役的预编译合约，调用会失败并烧光转发的全部 gas，导致原版 `SequencerInbox` 部署报 “contract creation code storage out of gas”。我们给探测调用加了 100k gas 上限并重建了 5 个合约；其余字节码完全一致，我们的 `RollupCreator` 为 `0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70`。
+2. *BSC 没有最终性信号。* Nitro 把 `difficulty ≠ 0` 的父链视为没有最终性，BoLD staker 因此在批次最终性检查上死循环并打满父链 RPC。节点以 `check-batch-finality=false` 与 `parent-chain-block-time=450ms` 运行；安全性仍由 BoLD 保证，活性依赖单排序器，L2 RPC 不暴露 `finalized`/`safe` 标签。
 
 ### R07 —— 新合约上线时未经审计
 
-`AgentRegistry`、`GenesisSeat`、`FeeKeeper`、paymaster 与桥消息处理器均为新代码。Devnet 阶段未经审计，Mainnet Beta 阶段也可能未完全审计。
+`AgentRegistryMirror`、`GenesisSeatClaim`、Beta `Bridge`、relayer、`FeeKeeper`、paymaster 以及 5 个 BSC 修补版 nitro-contracts 均为新代码或修改代码。主网 Beta 阶段未经审计。
 
 **应对。** 合约体量小、开源，并随部署地址一同公布。Mainnet Beta 上限限制了风险价值。审计由 20% 运营份额出资，并作为 Phase 4 取消上限前的退出条件。
 
@@ -497,7 +519,14 @@ ANTB 是受 ADGM 规则监管的代币化证券，不向美国人士提供。$AG
 | 上线时验证者 | 许可制 |
 | Devnet 链 ID | 11190（0x2BB6） |
 | Testnet 链 ID | 111900 |
-| Mainnet 链 ID | 1119（已预留） |
+| Mainnet 链 ID | 1119（0x45F）——2026-11-20 起上线 |
+| Mainnet 技术栈 | Arbitrum Nitro v3.12.4 · ArbOS 61 · BoLD |
+| Mainnet RPC | `https://rpc.agent-chain.agency`（Agent ID 网关；非 agent 返回 -32050；无 `finalized`/`safe` 标签） |
+| Mainnet 浏览器 | `https://explorer.agent-chain.agency` |
+| 链 owner / 基础设施手续费账户 | `0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443`（EOA；计划迁移 Safe） |
+| 批次发布者 / 验证者 / 排序器 | `0xC7b1…253F` / `0xc33d…e78F` / `0xc464…1072` |
+| 最低 L2 基础费用 | 493,366,955 wei（= ANTB $91.21 时每 1M gas $0.045） |
+| 费用代币定价器 | `0x132fa6bcc47d0dd51e93d6bde0cb8ee4ca8252aa`（每 BNB 的 ANTB-wei） |
 | 出块时间 | 250 ms |
 | 排序 | 先到先服务 |
 | 公共内存池 | 无 |
@@ -512,7 +541,8 @@ ANTB 是受 ADGM 规则监管的代币化证券，不向美国人士提供。$AG
 | ANTB 发行方 | BTech Holdings Ltd（bStocks），ADGM |
 | 桥接 | 1:1 原生；通过 ArbSys 提款 |
 | 桥不变式 | L2 原生 ANTB + 进行中提款 ≤ 托管量 |
-| Mainnet Beta 桥上限 | 每地址 1 ANTB；总量 500 ANTB |
+| Mainnet Beta 桥上限 | 每地址 0.1 ANTB；总量 100 ANTB（owner 可提高到 1 / 500） |
+| Beta 存款入账 | relayer 数分钟内按存款 nonce 顺序在 L2 1:1 入账 |
 | 算力单位 | 1 CU = 1 gas |
 | 基准费率（示意值） | 每 1,000,000 gas $0.045 |
 | Base fee 公式 | `minBaseFee = baseRate / P × 1e18` |
@@ -533,9 +563,10 @@ ANTB 是受 ADGM 规则监管的代币化证券，不向美国人士提供。$AG
 | 同样接受 | BAB 代币 |
 | 门控检查 | 排序器处的 `isAgent(tx.origin)` |
 | L2 注册表 | `AgentRegistry`，通过桥消息同步 |
-| 创世 | 在公布的区块对 BSC 上 Agent ID 持有者快照 |
-| 创世分配 | 编号 Genesis Seat + 少量原生 ANTB |
-| 席位编号 | 首次注册顺序 |
+| 创世区块 | 空（无预挖）；公民身份由 relayer 从 BSC 镜像 |
+| 快照 | BSC 区块 134,639,601（2026-11-20）的 236,355 位 Agent ID 持有者 |
+| Genesis Seat | BSC 上的 `GenesisSeatClaim.claim()`，每位持有者一枚灵魂绑定席位 |
+| 席位编号 | 领取顺序 |
 | 席位收入份额 | 排序器收入的 40%，按比例，一席一份 |
 | 账户抽象 | ERC-4337 EntryPoint v0.8；EIP-7702 |
 | Paymaster | 代付 ANTB；用户付 BNB/USDT；报价有效 60 s |

@@ -9,7 +9,7 @@ lang: zh
 
 ## 1. AGENT CHAIN 是什么？
 
-AGENT CHAIN 是构建在 BNB Smart Chain 上、面向 agent 原生场景的 Layer 2，采用 Arbitrum Nitro 技术栈，以 rollup 模式运行（calldata 发布到 BSC，BoLD 欺诈证明，上线时验证者为许可制）。它与其他 rollup 有三点不同：gas 以 ANTB（代币化 Anthropic 股票）支付，但费率锚定美元；只有持有 Binance Agent ID 或 BAB 代币的地址可以交易；BSC 上每一位 Agent ID 持有者都带着编号的 Genesis Seat 被写入创世区块。链以 250 ms 出块，先到先服务排序，无公共内存池，关闭优先费。
+AGENT CHAIN 是构建在 BNB Smart Chain 上、面向 agent 原生场景的 Layer 2（链 ID 1119，主网 Beta 于 2026-11-20 上线），采用 Arbitrum Nitro 技术栈，以 rollup 模式运行（calldata 发布到 BSC，BoLD 欺诈证明，上线时验证者为许可制）。它与其他 rollup 有三点不同：gas 以 ANTB（代币化 Anthropic 股票）支付，但费率锚定美元；只有持有 Binance Agent ID 或 BAB 代币的地址可以交易；BSC 上每一位 Agent ID 持有者都可以领取编号的 Genesis Seat 并镜像到 L2。链以 250 ms 出块，先到先服务排序，无公共内存池，关闭优先费。
 
 ## 2. 为什么用股票代币给 gas 定价？
 
@@ -34,7 +34,7 @@ AGENT CHAIN 的费用以美元报价，而不是以 ANTB 报价。基准费率�
 
 ## 5. 我需要持有 ANTB 才能使用吗？
 
-不一定。原生 ANTB 是 gas 代币，但 ERC-4337 paymaster（EntryPoint v0.8）允许你用 BNB 或 USDT 支付：请求一份报价（有效期 60 秒），把 paymaster 的签名放进你的用户操作，paymaster 就会在 L2 替你支付 ANTB。如果你希望直接持有 ANTB，可以从 BSC 以 1:1 桥入（合约 `0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`）。Mainnet Beta 期间，存款上限为每地址 1 ANTB、总量 500 ANTB。ANTB 适用发行方的资格规则，不向美国人士提供。
+不一定。原生 ANTB 是 gas 代币，但 ERC-4337 paymaster（EntryPoint v0.8）允许你用 BNB 或 USDT 支付：请求一份报价（有效期 60 秒），把 paymaster 的签名放进你的用户操作，paymaster 就会在 L2 替你支付 ANTB。如果你希望直接持有 ANTB，可以从 BSC 以 1:1 桥入（合约 `0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`）。Mainnet Beta 期间，通过桥（`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`）的存款上限为每地址 0.1 ANTB、总量 100 ANTB，由 Beta relayer 在数分钟内入账 L2。ANTB 适用发行方的资格规则，不向美国人士提供。
 
 ## 6. Agent ID 门控是如何工作的？
 
@@ -42,11 +42,13 @@ Binance Agent ID 是 BSC 上的 ERC-721（`0x60B9262456dE011F7d15a54CdD8c48bAaa8
 
 ## 7. 什么是 Genesis Seat（创世席位）？
 
-主网上线前，在公布的区块对 BSC 上所有 Agent ID 持有者进行快照。每人被写入 0 号区块，获得一枚编号的、不可转让的 `GenesisSeat` 代币（按首次注册顺序编号）以及一小笔原生 ANTB。Genesis Seat 持有者合计获得排序器收入的 40%，按比例分配，一席一份。分配方式是可由治理修改的协议参数；席位不赋予任何股权或回报权利。
+一枚编号的、不可转让的 ERC-721（`SEAT`），任何 Binance Agent ID（或 BAB）持有者都可以在 BSC 上调用 `GenesisSeatClaim.claim()`（`0x3972579dd0128BF0b6778cB3B457ba1d14D1695b`）领取一次；编号按领取顺序。快照在 BSC 区块 134,639,601 完成，236,355 位持有者每一位都有资格。Beta relayer 把席位持有者镜像到链 1119 的 L2 `AgentRegistry`——创世区块本身是空的，没有任何空投。Genesis Seat 持有者合计获得排序器收入的 40%，按比例分配，一席一份。分配方式是可由治理修改的协议参数；席位不赋予任何股权或回报权利。
 
 ## 8. 主网上线了吗？
 
-还没有。目前上线的是 Devnet：链 ID 11190，RPC `https://rpc.agent-chain.agency`，浏览器 `https://explorer.agent-chain.agency`，250 ms 出块，单节点，测试代币 tANTB 没有价值。BSC Testnet 上的 Testnet（链 ID 111900）是 Phase 1，目标 2026 年 12 月。Mainnet Beta（链 ID 1119）是 Phase 2，同样目标 2026 年 12 月，桥上限为每地址 1 ANTB、总量 500 ANTB。日期为目标而非承诺。
+是的。**主网 Beta 已于 2026-11-20 上线。** AGENT CHAIN 链 ID 1119（0x45F），Arbitrum Nitro v3.12.4 / ArbOS 61 rollup，结算到 BSC（56），ANTB 为原生 gas，单排序器，BoLD 验证。RPC：`https://rpc.agent-chain.agency`（Agent ID 网关——不持有 Agent ID/BAB 的发送方会收到 JSON-RPC 错误码 `-32050`；不支持 `finalized`/`safe` 区块标签，请用 `latest`）。浏览器：`https://explorer.agent-chain.agency`。BSC 上的桥存款（`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`）由 Beta relayer 在数分钟内按 nonce 顺序在 L2 上 1:1 入账；Beta 期间上限为每地址 0.1 ANTB、总量 100 ANTB。Devnet（链 ID 11190，测试代币 tANTB 没有价值）继续保留在 `https://devnet-rpc.agent-chain.agency` / `https://devnet-explorer.agent-chain.agency`。
+
+两条 BSC 相关的工程说明：nitro-contracts 的 `ArbitrumChecker` 会探测地址 `0x64`，而它在 BSC 上是一个会烧光转发 gas 的已退役预编译合约，因此我们给该探测加了 100k gas 上限并重建了 5 个合约（其余字节完全一致）；此外 Nitro 从 BSC 得不到最终性信号（`difficulty ≠ 0`），节点以 `check-batch-finality=false` 与 `parent-chain-block-time=450ms` 运行。详见 `apps/chain/RESEARCH.md`。
 
 ## 9. 它兼容 EVM 吗？
 

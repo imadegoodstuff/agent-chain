@@ -1,11 +1,11 @@
 ---
 title: "AGENT CHAIN Whitepaper"
-version: 0.1
+version: 0.2
 date: 2026-11-20
 lang: en
 ---
 
-# AGENT CHAIN Whitepaper v0.1
+# AGENT CHAIN Whitepaper v0.2
 
 **Intelligence is gas.** Blockspace priced in Anthropic. Every account is a human's agent.
 
@@ -19,9 +19,9 @@ First, the native gas token is **ANTB**, the BEP-20 bStocks token representing t
 
 Second, the sequencer only includes transactions from addresses that hold a **Binance Agent ID** (ERC-721 on BSC, one per KYC'd human, non-transferable) or a BAB token. Every address on AGENT CHAIN is therefore the agent of a verified human. There are no bots, no sybils and no sandwich attacks, which in turn allows an aggressive performance profile: 250 ms blocks, first-come-first-served ordering, no public mempool, priority tips disabled.
 
-Third, **genesis is human**. Before mainnet, every Agent ID holder on BSC is snapshotted and written into block 0 with a numbered Genesis Seat and a small native ANTB balance. Seats are identity and priority credentials; the launch fee split allocates 40% of sequencer fees to seats as a governance-controlled parameter (§8, §10), not a promise of returns.
+Third, **citizenship is human**. Every Agent ID holder on BSC can claim a numbered, non-transferable Genesis Seat in the `GenesisSeatClaim` contract; seat holders and registry entries are mirrored into the L2 by the Beta relayer. Seats are identity and priority credentials; the fee split that allocates 40% of sequencer fees to seats is a governance-controlled parameter (§8, §10), not a promise of returns.
 
-This document describes the architecture, fee model, identity layer, genesis procedure, account abstraction stack, latency targets, token and fee flow, agent infrastructure, roadmap and risks of AGENT CHAIN v0.1. The Devnet (chain ID 11190) is live. Testnet (Phase 1) and Mainnet Beta (Phase 2) are scheduled for December 2026.
+This document describes the architecture, fee model, identity layer, genesis and citizenship procedure, account abstraction stack, latency targets, token and fee flow, agent infrastructure, roadmap and risks of AGENT CHAIN. **Mainnet Beta (chain ID 1119) went live on 2026-11-20** as an Arbitrum Nitro v3.12.4 / ArbOS 61 rollup settling to BSC, with ANTB as native gas, a single sequencer, BoLD validation and an Agent ID gateway RPC. The Devnet (chain ID 11190, test tokens) remains available.
 
 ## 01 Why an agent chain
 
@@ -59,7 +59,7 @@ AGENT CHAIN resolves the three requirements by construction rather than by polic
 2. **Every account is a human's agent.** Inclusion requires a Binance Agent ID or BAB token. Identity is enforced at the sequencer, not by social convention.
 3. **Inherit security, do not invent it.** AGENT CHAIN is a Nitro rollup settling to BSC with BoLD fraud proofs. No new consensus, no new VM, no new bridge design.
 4. **Fast by removing adversaries, not by adding trust.** Because sybils and sandwiches are structurally excluded, the chain can run FCFS with no mempool and no tips without opening an MEV surface.
-5. **Launch with citizens, not with a treasury.** Genesis allocates seats and dust to every Agent ID holder. No pre-mine to insiders is written into block 0.
+5. **Launch with citizens, not with a treasury.** The genesis block is empty: no pre-mine, no insider allocation. Every native ANTB on L2 is backed by a deposit on BSC, and every citizen enters by claiming a Genesis Seat with their own Agent ID.
 6. **State every number and every risk.** Parameters are published in one table (Section 14). Dependencies on third parties (ANTB issuer, BSC, Arbitrum stack, oracles) are enumerated with a response for each (Section 13).
 
 ## 03 Architecture
@@ -106,17 +106,34 @@ Execution is standard Nitro: EVM-equivalent, with the same opcodes, precompiles 
 
 ### 3.6 Network facts
 
-| | Devnet (live) | Testnet (Phase 1) | Mainnet (Phase 2) |
+| | Mainnet Beta (live 2026-11-20) | Devnet (test data) | Testnet (staging) |
 |---|---|---|---|
-| Name | AGENT CHAIN Devnet | AGENT CHAIN Testnet | AGENT CHAIN |
-| Chain ID | `11190` (0x2BB6) | `111900` | `1119` (reserved) |
-| RPC | `https://rpc.agent-chain.agency` | TBA | TBA |
-| Explorer | `https://explorer.agent-chain.agency` | TBA | TBA |
-| Gas token | tANTB (test, no value) | tANTB | ANTB |
-| Parent | — (single node) | BSC Testnet (97) | BSC (56) |
+| Name | AGENT CHAIN | AGENT CHAIN Devnet | AGENT CHAIN Testnet |
+| Chain ID | `1119` (0x45F) | `11190` (0x2BB6) | `111900` |
+| RPC | `https://rpc.agent-chain.agency` (Agent ID gateway; fallback `https://agentchain-gateway.fly.dev`) | `https://devnet-rpc.agent-chain.agency` | TBA |
+| Explorer | `https://explorer.agent-chain.agency` | `https://devnet-explorer.agent-chain.agency` | TBA |
+| Gas token | ANTB (18 dec) | tANTB (test, no value) | tANTB |
+| Parent | BSC (56) · Nitro rollup | — (single node) | BSC Testnet (97) |
+| Stack | Arbitrum Nitro v3.12.4 · ArbOS 61 | Hardhat node | Nitro |
 | Block time | 250 ms | 250 ms | 250 ms |
 
-Website: `https://agent-chain.agency`. Devnet tokens have no value.
+Mainnet RPC notes: senders that do not hold an Agent ID (or BAB) are rejected by the gateway with JSON-RPC error `-32050`; `eth_getLogs` works; the `finalized` and `safe` block tags are **not** supported (BSC exposes no finality to Nitro) — use `latest`. Website: `https://agent-chain.agency`. Devnet tokens have no value.
+
+Mainnet core contracts on BSC (created by `RollupCreator.createRollup`, tx `0xd99b52c896685fe301f6bac7b6b0c60ff49546c931f1177473fd152959fa115f`, block 134,648,658):
+
+| Contract | Address |
+|---|---|
+| Rollup (BoLD) | `0x0EE1Db14CC85d5151C6E54711ED7423b90F9EF85` |
+| Inbox | `0x09A1f23Dc51088949bc043D6A3362d46dEE9b5b6` |
+| SequencerInbox | `0x165108EcA9Fd180328856c0FE518F2BCAb5bd7E8` |
+| Bridge (Nitro) | `0x337B50dB3A8b2EF587fd4AB47cF27C2A960b9dFd` |
+| Outbox | `0x763a4E77d0d0E300dba7527C402947aC86fc6fB3` |
+| UpgradeExecutor | `0x6B338a6b72fcED9306585aC2586664192958EF1B` |
+| ChallengeManager | `0x1E3256Fd2ACde0086f3B9c688Ea82C9742140179` |
+| RollupCreator (BSC-patched) | `0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70` |
+| Fee-token pricer | `0x132fa6bcc47d0dd51e93d6bde0cb8ee4ca8252aa` |
+
+Roles: chain owner `0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443` (an EOA, also the L2 infra fee account — migration to a Safe is planned), batch poster `0xC7b182073535A8aA849b304Caf834f81aD0F253F`, validator `0xc33dCf1d3314506B0f4b06E20bEdC7690c53e78F` (base stake 0.02 WBNB), sequencer `0xc464b85A4124CA92168ed865078514850b3C1072`.
 
 ## 04 The gas asset: ANTB
 
@@ -150,11 +167,11 @@ The bridge maintains the invariant
 native ANTB supply on L2  +  ANTB in in-flight withdrawals  ≤  ANTB held in BSC escrow
 ```
 
-Genesis allocations (Section 07) are the only native ANTB not minted by a deposit; the corresponding ANTB is deposited into escrow by the operator before the bridge is opened, so the invariant holds from block 0.
+The genesis block is empty, so the invariant holds from the first block: every unit of native ANTB on L2 was deposited on BSC. During Mainnet Beta, deposits made through the Beta `Bridge` contract (`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`) are credited 1:1 on L2 by the **Beta relayer**, usually within minutes and strictly in deposit-nonce order; the canonical Nitro `ERC20Inbox` path is used by the operator and will replace the Beta escrow once withdrawals are exposed in the UI.
 
 ### 4.4 Mainnet Beta caps
 
-During Phase 2 (Mainnet Beta) deposits are capped at **1 ANTB per address** and **500 ANTB total**. Caps are lifted in Phase 4.
+During Mainnet Beta the Beta bridge caps deposits at **0.1 ANTB per address** and **100 ANTB total** (owner-settable, to be raised to 1 / 500 as Beta proves out). Caps are lifted in Phase 4.
 
 ### 4.5 Issuer risk
 
@@ -273,21 +290,21 @@ Agent ID handles are **public aliases**. The registry stores a hash of the handl
 
 ## 07 Genesis
 
-### 7.1 Snapshot
+### 7.1 Snapshot and claim
 
-Before mainnet, a **snapshot block** on BSC is published in advance. At that block, every address holding a Binance Agent ID is recorded, together with the order in which it first registered.
+A **snapshot** of Agent ID holders on BSC was taken at block 134,639,601 (2026-11-20): **236,355 holders**, every one of them eligible. Citizenship is then exercised, not airdropped: each holder calls `GenesisSeatClaim.claim()` on BSC (`0x3972579dd0128BF0b6778cB3B457ba1d14D1695b`) and receives the next sequential seat.
 
-### 7.2 Genesis allocation
+### 7.2 Genesis state and mirroring
 
-The genesis state of AGENT CHAIN (chain ID 1119) contains, for every snapshotted address:
+The genesis block of AGENT CHAIN (chain ID 1119) is **empty** — no balances, no pre-mine. Citizenship state lives on BSC and is mirrored to the L2:
 
 | Item | Detail |
 |---|---|
-| Genesis Seat | One non-transferable `GenesisSeat` token with a sequential `seatId` |
-| Seat numbering | By first-registration order of the Agent ID on BSC |
-| Native ANTB | A small native ANTB balance, sufficient for initial transactions; amount published with the snapshot block |
+| Genesis Seat | One non-transferable `GenesisSeatClaim` token (ERC-721 `SEAT`) per Agent ID / BAB holder, sequential `seatId` by claim order, on-chain SVG metadata |
+| Registry | `AgentRegistryMirror.register()` on BSC (optional, permanent); mirrored into the L2 `AgentRegistry` by the relayer |
+| Native ANTB | Only via the bridge: deposits on BSC are credited 1:1 on L2 by the Beta relayer, in nonce order |
 
-`GenesisSeat` emits `SeatMinted(address, uint256)` for each allocation. On Devnet, `mint()` is open to any address once; on Mainnet, minting is limited to the genesis allocation and to Agent ID holders.
+`GenesisSeatClaim` emits `SeatClaimed(address indexed holder, uint256 indexed seatId)`. On Devnet, the test `GenesisSeat.mint()` is open to any address once and is unrelated to mainnet seats.
 
 ### 7.3 Seat economics
 
@@ -427,9 +444,9 @@ Phase 3 predeploys a set of standard endpoints. For an agent developer each prov
 
 | Phase | Name | Target | Deliverables |
 |---|---|---|---|
-| 0 | Devnet | Live, Nov 2026 | Single-node devnet, 250 ms blocks, public RPC + explorer, AgentRegistry + GenesisSeat contracts, website, whitepaper v0.1 |
-| 1 | Testnet on BSC Testnet | Dec 2026 | Nitro rollup settling to BSC Testnet, tANTB as custom gas token, bridge + faucet, Agent ID-gated sequencing, paymaster (pay in BNB/USDT), fee keeper live, Skill published to Binance Skills Hub |
-| 2 | Mainnet Beta | Dec 2026 | Agent ID snapshot → genesis → launch on BSC. ANTB native gas. Bridge caps (1 ANTB/address, 500 ANTB total) during Beta. $AGENT launch on Flap (ANTB pool, open to all wallets). Submission to Binance Agent ID Hackathon (deadline Dec 9, 2026) |
+| 0 | Devnet | Done, Nov 2026 | Single-node devnet (now `devnet-rpc.agent-chain.agency`), 250 ms blocks, AgentRegistry + GenesisSeat test contracts, website, whitepaper v0.1 |
+| 1 | Mainnet Beta on BSC | **Live, 2026-11-20** | Nitro v3.12.4 / ArbOS 61 rollup, chain 1119, ANTB native gas (min base fee 493,366,955 wei), BSC contracts AgentRegistryMirror / GenesisSeatClaim / Bridge, Agent ID gateway RPC, BoLD validation, single sequencer, Beta relayer crediting bridge deposits, caps 0.1 / 100 ANTB |
+| 2 | Beta hardening | Dec 2026 | Testnet on BSC Testnet (111900) as staging, paymaster (pay in BNB/USDT), fee keeper live, chain owner → Safe, Nitro Inbox replaces the Beta escrow bridge with self-service withdrawals, Skill listed in Binance Skills Hub, $AGENT launch on Flap (ANTB pool, open to all wallets), Hackathon submission (Dec 9, 2026) |
 | 3 | Streaming preconfirmations | Q1 2027 | 50 ms streamed sub-blocks via sequencer feed, multi-region edge RPC (SIN/TYO/FRA/IAD), ERC-8004 agent registry + x402 facilitator + MCP endpoint predeploys, Stylus agent SDK |
 | 4 | Scale & settlement | 2027 | Execution engine upgrade when throughput demands it; ZK validity settlement when the Arbitrum stack ships it; external validators; bridge caps lifted |
 
@@ -441,7 +458,7 @@ See `docs/roadmap.en.md` for checklists and exit criteria.
 
 ANTB is a beacon-proxy upgradeable token with issuer pause and blocklist controls. The issuer could pause transfers, blocklist the bridge escrow, or upgrade the token's logic.
 
-**Response.** L2 execution does not depend on the BSC token contract; a pause halts deposits and withdrawals, not blocks. Mainnet Beta caps (1 ANTB/address, 500 ANTB total) bound total exposure. The escrow address is published so users can monitor its status. AGENT CHAIN is independent of the issuer and makes no representation about ANTB's terms; users are directed to the issuer's documentation and eligibility rules.
+**Response.** L2 execution does not depend on the BSC token contract; a pause halts deposits and withdrawals, not blocks. Mainnet Beta caps (0.1 ANTB/address, 100 ANTB total) bound total exposure. The escrow address is published so users can monitor its status. AGENT CHAIN is independent of the issuer and makes no representation about ANTB's terms; users are directed to the issuer's documentation and eligibility rules.
 
 ### R02 — Oracle and liquidity
 
@@ -471,11 +488,16 @@ Holding ANTB to pay gas exposes a user to ANT equity price movement. A balance t
 
 Nitro is documented for Ethereum and Arbitrum parents. Running it against BSC, a different client with different finality semantics, is less tested.
 
-**Response.** Phase 1 runs the full stack on BSC Testnet before any real value is at risk. Mainnet launches as Beta with bridge caps. Deviations from Nitro defaults are documented and published. Upstream changes in the Arbitrum stack are tracked and adopted conservatively.
+**Response.** Mainnet runs as Beta with bridge caps while a BSC Testnet staging network follows in Phase 2. Deviations from Nitro defaults are documented in `apps/chain/RESEARCH.md` and summarised in the engineering note below. Upstream changes in the Arbitrum stack are tracked and adopted conservatively.
+
+**Engineering note — what BSC required (2026-11-20).** Two concrete findings from bringing Nitro up with BSC as the parent chain:
+
+1. *`ArbitrumChecker` vs. BSC address `0x64`.* nitro-contracts detects "am I on Arbitrum?" by probing address `0x64` (ArbSys). On BSC that address is a retired precompile which fails and burns all forwarded gas, so stock `SequencerInbox` deployment failed with "contract creation code storage out of gas". We rebuilt 5 contracts with a 100k gas cap on the probe; the bytecode is otherwise identical, and our `RollupCreator` is `0xdb5E51Af6d4Ff89584912818b762c6a7F3c68D70`.
+2. *No finality signal from BSC.* Nitro treats a parent with `difficulty ≠ 0` as having no finality, so the BoLD staker looped on batch-finality checks and saturated the parent RPC. The node runs with `check-batch-finality=false` and `parent-chain-block-time=450ms`; safety still rests on BoLD, liveness on the single sequencer, and the L2 RPC does not expose `finalized`/`safe` tags.
 
 ### R07 — New contracts unaudited at launch
 
-`AgentRegistry`, `GenesisSeat`, `FeeKeeper`, the paymaster and bridge-message handlers are new code. They are not audited at Devnet and may not be fully audited at Mainnet Beta.
+`AgentRegistryMirror`, `GenesisSeatClaim`, the Beta `Bridge`, the relayer, `FeeKeeper`, the paymaster and the 5 BSC-patched nitro-contracts are new or modified code. They are not audited at Mainnet Beta.
 
 **Response.** Contracts are small, open source and published with the deployment addresses. Mainnet Beta caps limit value at risk. Audits are funded from the 20% operations share and are a Phase 4 exit requirement before caps are lifted.
 
@@ -497,7 +519,14 @@ ANTB is a tokenized security issued under ADGM rules and not available to US per
 | Validators at launch | Permissioned |
 | Devnet chain ID | 11190 (0x2BB6) |
 | Testnet chain ID | 111900 |
-| Mainnet chain ID | 1119 (reserved) |
+| Mainnet chain ID | 1119 (0x45F) — live since 2026-11-20 |
+| Mainnet stack | Arbitrum Nitro v3.12.4 · ArbOS 61 · BoLD |
+| Mainnet RPC | `https://rpc.agent-chain.agency` (Agent ID gateway; error -32050 for non-agents; no `finalized`/`safe` tags) |
+| Mainnet explorer | `https://explorer.agent-chain.agency` |
+| Chain owner / infra fee account | `0x8D61bD807Da29C71eAbA6e85Fc42796E357fA443` (EOA; Safe planned) |
+| Batch poster / validator / sequencer | `0xC7b1…253F` / `0xc33d…e78F` / `0xc464…1072` |
+| Min L2 base fee | 493,366,955 wei (= $0.045 per 1M gas at ANTB $91.21) |
+| Fee-token pricer | `0x132fa6bcc47d0dd51e93d6bde0cb8ee4ca8252aa` (ANTB-wei per BNB) |
 | Block time | 250 ms |
 | Ordering | First-come-first-served |
 | Public mempool | None |
@@ -512,7 +541,8 @@ ANTB is a tokenized security issued under ADGM rules and not available to US per
 | ANTB issuer | BTech Holdings Ltd (bStocks), ADGM |
 | Bridging | 1:1 native; withdraw via ArbSys |
 | Bridge invariant | native L2 ANTB + in-flight withdrawals ≤ escrow |
-| Mainnet Beta bridge caps | 1 ANTB / address; 500 ANTB total |
+| Mainnet Beta bridge caps | 0.1 ANTB / address; 100 ANTB total (owner can raise to 1 / 500) |
+| Beta deposit credit | Relayer credits L2 1:1 within minutes, in deposit-nonce order |
 | Compute unit | 1 CU = 1 gas |
 | Base rate (illustrative) | $0.045 per 1,000,000 gas |
 | Base fee formula | `minBaseFee = baseRate / P × 1e18` |
@@ -533,9 +563,10 @@ ANTB is a tokenized security issued under ADGM rules and not available to US per
 | Also accepted | BAB token |
 | Gating check | `isAgent(tx.origin)` at the sequencer |
 | L2 registry | `AgentRegistry`, synced via bridge messages |
-| Genesis | Snapshot of Agent ID holders on BSC at a published block |
-| Genesis allocation | Numbered Genesis Seat + small native ANTB |
-| Seat numbering | First-registration order |
+| Genesis block | Empty (no pre-mine); citizenship mirrored from BSC by the relayer |
+| Snapshot | 236,355 Agent ID holders at BSC block 134,639,601 (2026-11-20) |
+| Genesis Seat | `GenesisSeatClaim.claim()` on BSC, one soulbound seat per holder |
+| Seat numbering | Claim order |
 | Seat revenue share | 40% of sequencer revenue, pro-rata, one seat one share |
 | Account abstraction | ERC-4337 EntryPoint v0.8; EIP-7702 |
 | Paymaster | Pays ANTB; user pays BNB/USDT; 60 s quotes |

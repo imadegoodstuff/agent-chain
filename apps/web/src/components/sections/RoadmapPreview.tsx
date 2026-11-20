@@ -17,12 +17,16 @@ export function PhaseCard({ p, full = false }: { p: (typeof ROADMAP)[number]; fu
             <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" />
             Live
           </span>
+        ) : p.done ? (
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted">
+            <Check size={10} className="text-green" /> Done
+          </span>
         ) : (
           <span className="font-mono text-[10px] uppercase tracking-wider text-muted">{p.when}</span>
         )}
       </div>
       <div className="mt-3 text-lg font-medium leading-snug text-bone">{p.title}</div>
-      {p.live && <div className="mt-1 font-mono text-[11px] text-muted">{p.when}</div>}
+      {(p.live || p.done) && <div className="mt-1 font-mono text-[11px] text-muted">{p.when}</div>}
       <ul className={`mt-4 space-y-1.5 text-sm text-muted ${full ? "" : "line-clamp-[8]"}`}>
         {p.items.map((it) => {
           const text = roadmapItemText(it);
@@ -53,7 +57,7 @@ export function RoadmapPreview() {
       <SectionHeader
         index="08"
         titleKey="s_roadmap"
-        heading={L("Devnet now. Testnet and Mainnet Beta in December. Streaming in Q1.", "现在是 Devnet。12 月 Testnet 与 Mainnet Beta。Q1 流式预确认。")}
+        heading={L("Mainnet Beta is live. Hardening in December. Streaming in Q1.", "主网 Beta 已上线。12 月加固。Q1 流式预确认。")}
       />
       <Stagger className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-5" gap={0.06}>
         {ROADMAP.map((p) => (

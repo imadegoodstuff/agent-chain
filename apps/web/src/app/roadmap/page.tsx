@@ -8,8 +8,8 @@ import { getLang } from "@/lib/lang";
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
   const lang = await getLang((await searchParams).lang);
   return lang === "zh"
-    ? { title: "路线图", description: "AGENT CHAIN 路线图：Devnet（已上线）→ Testnet → Mainnet Beta → 流式预确认 → 扩容与结算。" }
-    : { title: "Roadmap", description: "AGENT CHAIN roadmap: Devnet (live) → Testnet → Mainnet Beta → Streaming preconfirmations → Scale & settlement." };
+    ? { title: "路线图", description: "AGENT CHAIN 路线图：Devnet（完成）→ 主网 Beta（2026-11-20 上线，链 1119）→ Beta 加固 → 流式预确认 → 扩容与结算。" }
+    : { title: "Roadmap", description: "AGENT CHAIN roadmap: Devnet (done) → Mainnet Beta (live 2026-11-20, chain 1119) → Beta hardening → Streaming preconfirmations → Scale & settlement." };
 }
 
 export default async function RoadmapPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {

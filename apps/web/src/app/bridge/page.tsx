@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import { BridgeApp, BridgeDisclosures, DepositsTable } from "@/components/bridge/BridgeApp";
+import { FlowTabs } from "@/components/agent/FlowTabs";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { BSC_CONTRACTS, BSC_DEPLOYED_AT, bscCode } from "@/lib/bsc";
 import { DISCLAIMERS, LINKS } from "@/lib/spec";
@@ -8,7 +9,7 @@ import { DISCLAIMERS, LINKS } from "@/lib/spec";
 export const metadata: Metadata = {
   title: "Bridge",
   description:
-    "Genesis Deposits on BSC mainnet: deposit ANTB into the AGENT CHAIN Bridge before launch and be credited 1:1 in block 0. Agent ID required. Beta caps apply.",
+    "Bridge ANTB from BSC to AGENT CHAIN (chain 1119, Mainnet Beta). Deposits are credited 1:1 as native ANTB by the Beta relayer within minutes. Agent ID required. Caps 0.1 / 100 ANTB.",
 };
 
 export default function BridgePage() {
@@ -19,14 +20,15 @@ export default function BridgePage() {
           <span>Bridge · BSC mainnet</span>
           <span className="text-line">/</span>
           <span className="inline-flex items-center gap-1.5 text-green">
-            <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" /> Genesis Deposit window open
+            <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" /> Mainnet Beta live · chain 1119
           </span>
         </div>
-        <h1 className="h-display mt-3 max-w-3xl text-4xl md:text-5xl">ANTB in now. Native ANTB in block 0.</h1>
+        <h1 className="h-display mt-3 max-w-3xl text-4xl md:text-5xl">ANTB in on BSC. Native ANTB on AGENT CHAIN, minutes later.</h1>
         <p className="mt-5 max-w-2xl text-muted md:text-lg">
-          The Bridge contract is live on BNB Smart Chain. Every ANTB deposited before mainnet launch is a{" "}
-          <span className="text-bone">Genesis Deposit</span>: credited 1:1 as native balance in block 0 of AGENT CHAIN, ordered
-          by deposit nonce. The L2 itself is not live yet. Agent ID (or BAB) required.
+          AGENT CHAIN mainnet (chain 1119) is live on BNB Smart Chain. ANTB you deposit into the Bridge contract on BSC is credited
+          1:1 as <span className="text-bone">native ANTB on AGENT CHAIN</span> by the Beta relayer — usually within minutes, in
+          deposit-nonce order. Agent ID (or BAB) required — and since the Agent ID lives in the CLI-only Agentic Wallet, the
+          recommended path is to let your agent run the two transactions (first tab below).
         </p>
       </div>
 
@@ -34,19 +36,23 @@ export default function BridgePage() {
         <BridgeDisclosures compact />
       </div>
 
-      <div className="container-site mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)]">
+      <div id="agent" className="container-site mt-8 scroll-mt-24">
+        <FlowTabs
+          mode="bridge"
+          walletContent={
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)]">
         <BridgeApp />
 
         <div className="min-w-0 space-y-8">
           <div>
-            <div className="label mb-4">How a Genesis Deposit works</div>
+            <div className="label mb-4">How a deposit works</div>
             <ol className="space-y-3 text-sm text-muted">
               {[
                 "Connect a BSC wallet holding an Agent ID (or BAB). The contract checks balanceOf on both credentials; nothing else is read.",
                 "Approve the exact ANTB amount to the Bridge (BEP-20 approve — never unlimited), then call deposit(amount, l2Recipient).",
                 "ANTB is escrowed in the Bridge contract and a Deposited(from, l2Recipient, amount, nonce) event is emitted. Your nonce is your place in line.",
-                "At mainnet launch every Deposited event is written into block 0 as a native ANTB balance of l2Recipient, 1:1, in nonce order.",
-                "To transact on AGENT CHAIN the recipient must hold an Agent ID. Withdrawals open with the Nitro bridge, not before.",
+                "The Beta relayer reads Deposited events in nonce order and credits l2Recipient with the same amount of native ANTB on AGENT CHAIN (chain 1119), usually within minutes.",
+                "To transact on AGENT CHAIN the recipient must hold an Agent ID (the gateway rejects others with -32050). Withdrawals L2 → BSC go through the Nitro Outbox; no self-service UI yet.",
               ].map((s, i) => (
                 <li key={s} className="flex gap-3">
                   <span className="font-mono text-xs text-amber">{String(i + 1).padStart(2, "0")}</span>
@@ -57,10 +63,10 @@ export default function BridgePage() {
           </div>
 
           <div className="card p-5 text-sm text-muted">
-            <div className="label mb-2">Caps · Genesis Deposit window</div>
-            Current caps are read live from the contract (left). The window opened with{" "}
-            <span className="text-bone">0.1 ANTB per address</span> and <span className="text-bone">100 ANTB total</span>; the owner
-            raises them to 1 / 500 ANTB when the Nitro chain is live (SPEC §4, Phase 2). Caps count cumulative deposits per address.
+            <div className="label mb-2">Caps · Mainnet Beta</div>
+            Current caps are read live from the contract (left): <span className="text-bone">0.1 ANTB per address</span> and{" "}
+            <span className="text-bone">100 ANTB total</span>; the owner can raise them to 1 / 500 ANTB as Beta proves out (SPEC §4).
+            Caps count cumulative deposits per address.
           </div>
 
           <div className="card p-5 text-sm text-muted">
@@ -109,6 +115,9 @@ event Deposited(address indexed from, address indexed l2Recipient, uint256 amoun
             <p>{DISCLAIMERS.devnet}</p>
           </div>
         </div>
+      </div>
+          }
+        />
       </div>
 
       <div className="container-site mt-16">

@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import { Build } from "@/components/sections/Build";
+import { AgentIntegrationCard, AgentSteps } from "@/components/agent/AgentSteps";
+import { MainnetCore } from "@/components/builders/MainnetCore";
 import { Accordion, faqItems } from "@/components/sections/FAQ";
 import { Markdown } from "@/components/docs/Markdown";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { readDocWithFallback } from "@/lib/docs";
 import { getLang } from "@/lib/lang";
 import { contractAddresses } from "@/lib/deployments";
-import { DISCLAIMERS, EXPLORER_URL, NETWORKS, TOKENS } from "@/lib/spec";
+import { DEVNET_EXPLORER_URL, DISCLAIMERS, MAINNET, NETWORKS, TOKENS } from "@/lib/spec";
 import { BSC_CONTRACT_ROWS, BSC_DEPLOYED_AT, BSC_OWNER, BSC_OWNER_PERMISSIONS, bscAddr, bscCode } from "@/lib/bsc";
 import { fmtInt } from "@/lib/format";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Builders",
-  description: "Build on AGENT CHAIN Devnet: chain ID 11190, RPC, explorer, Foundry / Hardhat / viem config, contracts and FAQ.",
+  description: "Build on AGENT CHAIN mainnet (chain 1119, Nitro on BSC): RPC, explorer, Foundry / Hardhat / viem config, core contracts, roles, Beta limits and FAQ.",
 };
 
 export default async function BuildersPage() {
@@ -26,11 +28,27 @@ export default async function BuildersPage() {
         <div className="label-amber">Builders</div>
         <h1 className="h-display mt-3 max-w-3xl text-4xl md:text-5xl">Standard EVM, 250 ms blocks, fees you can ignore.</h1>
         <p className="mt-5 max-w-2xl text-muted md:text-lg">
-          Everything you need to point tooling at the devnet today, and what changes at Testnet and Mainnet.
-          {" "}
+          Everything you need to point tooling at AGENT CHAIN mainnet (chain 1119, Mainnet Beta since {MAINNET.launched}): endpoints, the
+          Nitro core contracts on BSC, who holds which key, and what is still Beta. A devnet with test tokens stays available.{" "}
           {DISCLAIMERS.devnet}
         </p>
       </div>
+
+      <section id="agent" className="container-site mt-16 scroll-mt-20">
+        <AgentSteps className="mb-6" />
+        <AgentIntegrationCard />
+      </section>
+
+      <section id="mainnet" className="container-site mt-16 scroll-mt-20">
+        <div className="label-amber mb-6 flex flex-wrap items-center gap-3">
+          <span>AGENT CHAIN MAINNET · CHAIN 1119</span>
+          <span className="text-line">/</span>
+          <span className="inline-flex items-center gap-1.5 text-green">
+            <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" /> LIVE · BETA · SINCE {MAINNET.launched}
+          </span>
+        </div>
+        <MainnetCore />
+      </section>
 
       <section id="mainnet-contracts" className="container-site mt-16 scroll-mt-20">
         <div className="label-amber mb-6 flex flex-wrap items-center gap-3">
@@ -144,7 +162,7 @@ export default async function BuildersPage() {
                 {NETWORKS.map((n) => (
                   <th key={n.key} className="px-5 py-3 text-left font-mono text-[11px] font-normal uppercase tracking-label text-muted">
                     {n.name}
-                    <span className={`ml-2 ${n.key === "devnet" ? "text-green" : "text-muted"}`}>· {n.status}</span>
+                    <span className={`ml-2 ${n.key === "mainnet" ? "text-green" : "text-muted"}`}>· {n.status}</span>
                   </th>
                 ))}
               </tr>
@@ -190,7 +208,7 @@ export default async function BuildersPage() {
         <div className="label-amber mb-6 flex items-center gap-3">
           <span>CONTRACTS</span>
           <span className="text-line">/</span>
-          <span>{contracts.fromFile ? "DEVNET · from deployments/devnet.json" : "DEVNET · addresses TBA until deploy"}</span>
+          <span>{contracts.fromFile ? "DEVNET (TEST DATA) · from deployments/devnet.json" : "DEVNET (TEST DATA) · addresses TBA until deploy"}</span>
         </div>
         <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-3">
           {[
@@ -220,7 +238,7 @@ export default async function BuildersPage() {
                   <span>TBA</span>
                 ) : (
                   <>
-                    <a href={`${EXPLORER_URL}/address/${c.a}`} target="_blank" rel="noreferrer" className="truncate hover:text-amber">
+                    <a href={`${DEVNET_EXPLORER_URL}/address/${c.a}`} target="_blank" rel="noreferrer" className="truncate hover:text-amber">
                       {c.a}
                     </a>
                     <CopyButton value={c.a} />

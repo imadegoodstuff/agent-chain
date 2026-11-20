@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import type { AbiEvent, Address, Log } from "viem";
-import { BSC_CONTRACTS, BSC_DEPLOY_BLOCKS, bridgeAbi, publicClient, registryAbi, seatClaimAbi } from "@/lib/bsc";
-import type { BscStats, DepositEvent, SeatClaimEvent } from "@/lib/bscTypes";
+import { getAddress, isAddress, type AbiEvent, type Address, type Log } from "viem";
+import { BSC_CONTRACTS, BSC_DEPLOY_BLOCKS, bridgeAbi, erc20Abi, erc721BalanceAbi, publicClient, registryAbi, seatClaimAbi } from "@/lib/bsc";
+import type { AddressStatus, BscStats, DepositEvent, SeatClaimEvent } from "@/lib/bscTypes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -207,8 +207,72 @@ async function compute(): Promise<BscStats> {
 let cache: { at: number; body: BscStats } | null = null;
 let inflight: Promise<BscStats> | null = null;
 
-export async function GET() {
+/** Per-address read-only status (the user's OWN 0x address; never resolved from a name). */
+const addrCache = new Map<string, { at: number; body: AddressStatus }>();
+const ADDR_TTL_MS = 10_000;
+
+async function addressStatus(address: Address): Promise<AddressStatus> {
+  const r = await publicClient.multicall({
+    allowFailure: true,
+    contracts: [
+      { address: BSC_CONTRACTS.AgentId, abi: erc721BalanceAbi, functionName: "balanceOf", args: [address] },
+      { address: BSC_CONTRACTS.BAB, abi: erc721BalanceAbi, functionName: "balanceOf", args: [address] },
+      { address: BSC_CONTRACTS.AgentRegistryMirror, abi: registryAbi, functionName: "isRegistered", args: [address] },
+      { address: BSC_CONTRACTS.AgentRegistryMirror, abi: registryAbi, functionName: "indexOf", args: [address] },
+      { address: BSC_CONTRACTS.GenesisSeatClaim, abi: seatClaimAbi, functionName: "seatOf", args: [address] },
+      { address: BSC_CONTRACTS.Bridge, abi: bridgeAbi, functionName: "depositedBy", args: [address] },
+      { address: BSC_CONTRACTS.Bridge, abi: bridgeAbi, functionName: "remainingFor", args: [address] },
+      { address: BSC_CONTRACTS.ANTB, abi: erc20Abi, functionName: "balanceOf", args: [address] },
+      { address: BSC_CONTRACTS.GenesisSeatClaim, abi: seatClaimAbi, functionName: "totalSeats" },
+    ],
+  });
+  const big = (i: number) => (r[i].status === "success" ? (r[i].result as bigint) : null);
+  const agentId = big(0);
+  const bab = big(1);
+  const registered = r[2].status === "success" ? (r[2].result as boolean) : null;
+  return {
+    ok: r.every((x) => x.status === "success"),
+    address,
+    ts: Date.now(),
+    agentIdBalance: agentId?.toString() ?? null,
+    babBalance: bab?.toString() ?? null,
+    isAgent: agentId === null && bab === null ? null : (agentId ?? 0n) > 0n || (bab ?? 0n) > 0n,
+    registered,
+    registryIndex: big(3) !== null ? Number(big(3)) : null,
+    seatId: big(4) !== null ? Number(big(4)) : null,
+    totalSeats: big(8) !== null ? Number(big(8)) : null,
+    depositedBy: big(5)?.toString() ?? null,
+    remainingFor: big(6)?.toString() ?? null,
+    antbBalance: big(7)?.toString() ?? null,
+  };
+}
+
+export async function GET(req: Request) {
   const now = Date.now();
+  const q = new URL(req.url).searchParams.get("address");
+  if (q !== null) {
+    const a = q.trim();
+    if (!isAddress(a, { strict: false })) {
+      return NextResponse.json(
+        { ok: false, error: "address_only", message: "Enter a 0x address (40 hex chars). Lookups by name, handle or .ai domain are not supported." },
+        { status: 400, headers: { "cache-control": "no-store" } },
+      );
+    }
+    const key = a.toLowerCase();
+    const hit = addrCache.get(key);
+    if (hit && now - hit.at < ADDR_TTL_MS) return NextResponse.json(hit.body, { headers: { "cache-control": "no-store" } });
+    try {
+      const body = await addressStatus(getAddress(a));
+      addrCache.set(key, { at: now, body });
+      if (addrCache.size > 500) addrCache.delete(addrCache.keys().next().value as string);
+      return NextResponse.json(body, { headers: { "cache-control": "no-store" } });
+    } catch (e) {
+      return NextResponse.json(
+        { ok: false, error: "rpc", message: e instanceof Error ? e.message.split("\n")[0].slice(0, 120) : "unreachable" },
+        { status: 502, headers: { "cache-control": "no-store" } },
+      );
+    }
+  }
   if (cache && now - cache.at < TTL_MS) {
     return NextResponse.json(cache.body, { headers: { "cache-control": "public, max-age=10, s-maxage=10" } });
   }

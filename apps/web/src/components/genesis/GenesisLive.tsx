@@ -6,7 +6,7 @@ import { ArrowUpRight, Loader2, Wallet } from "lucide-react";
 import { encodeFunctionData } from "viem";
 import { useStats } from "@/hooks/useStats";
 import { fmtInt, shortAddr } from "@/lib/format";
-import { EXPLORER_URL, DISCLAIMERS } from "@/lib/spec";
+import { DEVNET_EXPLORER_URL as EXPLORER_URL, DISCLAIMERS } from "@/lib/spec";
 import { ensureDevnet, getProvider } from "../wallet";
 
 const MINT_DATA = encodeFunctionData({
@@ -135,8 +135,8 @@ function MintButton({ seatAddress }: { seatAddress: string | null }) {
       )}
       {state.k === "err" && <div className="mt-3 font-mono text-[11px] text-red">{state.msg}</div>}
       <p className="mt-6 text-xs leading-relaxed text-muted">
-        Devnet seats are test data only. Real Genesis Seats are claimed on BSC mainnet (panel above) and written into the
-        genesis block.
+        Devnet seats are test data only. Real Genesis Seats are claimed on BSC (panel above) and mirrored to AGENT CHAIN
+        mainnet (chain 1119) by the relayer.
       </p>
     </div>
   );

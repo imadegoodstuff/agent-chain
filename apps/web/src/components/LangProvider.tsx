@@ -39,14 +39,14 @@ export function LangProvider({ children, initial = "en" }: { children: ReactNode
       try {
         document.cookie = `ac.lang=${l}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
         window.localStorage.setItem("ac.lang", l);
+        // Navigate to the same page with ?lang= so server-rendered content
+        // (docs pages, titles, <html lang>) re-renders in the new language.
         const url = new URL(window.location.href);
-        if (l === "zh") url.searchParams.set("lang", "zh");
-        else url.searchParams.delete("lang");
-        window.history.replaceState(null, "", url.toString());
+        url.searchParams.set("lang", l);
+        router.replace(url.pathname + url.search + url.hash, { scroll: false });
       } catch {
-        /* ignore */
+        router.refresh();
       }
-      router.refresh();
     },
     [router],
   );

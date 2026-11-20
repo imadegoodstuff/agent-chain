@@ -63,7 +63,7 @@ export default function OG() {
             }}
           >
             <div style={{ width: 10, height: 10, borderRadius: 5, background: "#5BD39A", display: "flex" }} />
-            AGENT CHAIN · AGENT-NATIVE L2 ON BNB CHAIN · DEVNET LIVE
+            AGENT CHAIN · AGENT-NATIVE L2 ON BNB CHAIN · MAINNET BETA LIVE · CHAIN 1119
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 92, fontWeight: 600, letterSpacing: -4, lineHeight: 1 }}>Intelligence is gas.</div>

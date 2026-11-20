@@ -5,22 +5,23 @@ import { ArrowUpRight, Check, Wallet } from "lucide-react";
 import { Section, SectionHeader } from "../ui/Section";
 import { Reveal } from "../ui/Reveal";
 import { CopyButton } from "../ui/CopyButton";
-import { DEVNET, DISCLAIMERS, EXPLORER_URL, RPC_URL } from "@/lib/spec";
-import { addDevnet } from "../wallet";
+import { DEVNET, DEVNET_EXPLORER_URL, DEVNET_RPC_URL, DISCLAIMERS, EXPLORER_URL, MAINNET, RPC_URL } from "@/lib/spec";
+import { addDevnet, addMainnet } from "../wallet";
 import { useL } from "../LangProvider";
+import { AgentSteps } from "../agent/AgentSteps";
 
 const snippets = {
   Foundry: `# foundry.toml
 [rpc_endpoints]
-agentchain_devnet = "${RPC_URL}"
+agentchain = "${RPC_URL}"            # mainnet · chain 1119 · gas ANTB
+agentchain_devnet = "${DEVNET_RPC_URL}"  # devnet · 11190 · test data
 
-# deploy
+# deploy (sender must hold a Binance Agent ID — the gateway rejects others with -32050)
 forge create src/Agent.sol:Agent \\
-  --rpc-url agentchain_devnet \\
-  --private-key $PK \\
-  --legacy
+  --rpc-url agentchain \\
+  --private-key $PK
 
-# read chain id → 11190
+# read chain id → 1119
 cast chain-id --rpc-url ${RPC_URL}`,
   Hardhat: `// hardhat.config.ts
 import { HardhatUserConfig } from "hardhat/config";
@@ -28,8 +29,13 @@ import { HardhatUserConfig } from "hardhat/config";
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {
-    agentchainDevnet: {
+    agentchain: {            // mainnet · gas ANTB · Agent ID required to send
       url: "${RPC_URL}",
+      chainId: ${MAINNET.chainId},
+      accounts: process.env.PK ? [process.env.PK] : [],
+    },
+    agentchainDevnet: {      // devnet · test data
+      url: "${DEVNET_RPC_URL}",
       chainId: ${DEVNET.chainId},
       accounts: process.env.PK ? [process.env.PK] : [],
     },
@@ -38,17 +44,17 @@ const config: HardhatUserConfig = {
 export default config;`,
   viem: `import { defineChain, createPublicClient, http } from "viem";
 
-export const agentChainDevnet = defineChain({
-  id: ${DEVNET.chainId},
-  name: "${DEVNET.name}",
-  nativeCurrency: { name: "Test ANTB", symbol: "${DEVNET.symbol}", decimals: 18 },
+export const agentChain = defineChain({
+  id: ${MAINNET.chainId},
+  name: "${MAINNET.name}",
+  nativeCurrency: { name: "ANTB", symbol: "${MAINNET.symbol}", decimals: 18 },
   rpcUrls: { default: { http: ["${RPC_URL}"] } },
   blockExplorers: { default: { name: "AGENT CHAIN Explorer", url: "${EXPLORER_URL}" } },
-  testnet: true,
 });
 
-const client = createPublicClient({ chain: agentChainDevnet, transport: http() });
-console.log(await client.getBlockNumber()); // +1 every 250 ms`,
+// Nitro on BSC: no \`finalized\` / \`safe\` tags — always use \`latest\`.
+const client = createPublicClient({ chain: agentChain, transport: http() });
+console.log(await client.getBlockNumber()); // 250 ms blocks`,
 } as const;
 
 type Tab = keyof typeof snippets;
@@ -80,39 +86,51 @@ export function CodeTabs() {
   );
 }
 
-export function AddChainButton({ className = "" }: { className?: string }) {
+export function AddChainButton({ className = "", network = "mainnet" }: { className?: string; network?: "mainnet" | "devnet" }) {
   const [state, setState] = useState<"idle" | "added" | "no-wallet" | "rejected">("idle");
+  const L = useL();
+  const main = network === "mainnet";
   return (
     <div className={className}>
       <button
         type="button"
-        onClick={async () => setState(await addDevnet())}
-        className="btn-primary w-full whitespace-nowrap sm:w-auto"
+        onClick={async () => setState(await (main ? addMainnet() : addDevnet()))}
+        className={`${main ? "btn-primary" : "btn-ghost"} w-full whitespace-nowrap sm:w-auto`}
       >
         {state === "added" ? <Check size={15} className="shrink-0" /> : <Wallet size={15} className="shrink-0" />}
-        {state === "added" ? "Devnet added" : "Add Devnet to wallet"}
+        {state === "added"
+          ? main
+            ? L("AGENT CHAIN added", "已添加 AGENT CHAIN")
+            : L("Devnet added", "已添加 Devnet")
+          : main
+            ? L("Add AGENT CHAIN to wallet", "把 AGENT CHAIN 添加到钱包")
+            : L("Add Devnet (test)", "添加 Devnet（测试）")}
       </button>
-      {state === "no-wallet" && <div className="mt-2 font-mono text-[11px] text-red">No injected wallet found.</div>}
-      {state === "rejected" && <div className="mt-2 font-mono text-[11px] text-muted">Request rejected or chain already added.</div>}
+      {state === "no-wallet" && <div className="mt-2 font-mono text-[11px] text-red">{L("No injected wallet found.", "未检测到注入式钱包。")}</div>}
+      {state === "rejected" && <div className="mt-2 font-mono text-[11px] text-muted">{L("Request rejected or chain already added.", "请求被拒绝或链已添加。")}</div>}
     </div>
   );
 }
 
 export function EndpointCards() {
-  const rows: { k: string; v: string; hint?: string }[] = [
-    { k: "RPC", v: RPC_URL },
-    { k: "Explorer", v: EXPLORER_URL },
-    { k: "Chain ID", v: `${DEVNET.chainId}`, hint: DEVNET.chainIdHex.toUpperCase().replace("0X", "0x") },
-    { k: "Currency", v: DEVNET.symbol, hint: "18 decimals · no value" },
+  const L = useL();
+  const rows: { k: string; v: string; hint?: string; dev?: boolean }[] = [
+    { k: L("RPC · mainnet", "RPC · 主网"), v: RPC_URL, hint: L("Agent ID gateway · non-agents get -32050 · no finalized/safe tags", "Agent ID 网关 · 非 agent 返回 -32050 · 不支持 finalized/safe") },
+    { k: L("Explorer · mainnet", "浏览器 · 主网"), v: EXPLORER_URL },
+    { k: L("Chain ID · mainnet", "链 ID · 主网"), v: `${MAINNET.chainId}`, hint: `${MAINNET.chainIdHex.toUpperCase().replace("0X", "0x")} · ${MAINNET.stack}` },
+    { k: L("Currency", "货币"), v: MAINNET.symbol, hint: L("18 decimals · min base fee 493,366,955 wei", "18 位小数 · 最低基础费用 493,366,955 wei") },
+    { k: L("RPC · devnet (test)", "RPC · Devnet（测试）"), v: DEVNET_RPC_URL, dev: true },
+    { k: L("Explorer · devnet (test)", "浏览器 · Devnet（测试）"), v: DEVNET_EXPLORER_URL, dev: true },
+    { k: L("Chain ID · devnet", "链 ID · Devnet"), v: `${DEVNET.chainId}`, hint: `${DEVNET.chainIdHex.toUpperCase().replace("0X", "0x")} · tANTB · ${DISCLAIMERS.devnet}`, dev: true },
   ];
   return (
     <div className="grid grid-cols-1 min-w-0 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2">
       {rows.map((r) => (
-        <div key={r.k} className="flex min-w-0 items-start justify-between gap-3 bg-surface p-5">
+        <div key={r.k} className={`flex min-w-0 items-start justify-between gap-3 p-5 ${r.dev ? "bg-surface/60" : "bg-surface"}`}>
           <div className="min-w-0 flex-1">
-            <div className="label">{r.k}</div>
-            <div className="mt-2 break-all font-mono text-sm text-bone">{r.v}</div>
-            {r.hint && <div className="mt-1 font-mono text-[11px] text-muted">{r.hint}</div>}
+            <div className={`label ${r.dev ? "text-muted/70" : ""}`}>{r.k}</div>
+            <div className={`mt-2 break-all font-mono text-sm ${r.dev ? "text-bone/70" : "text-bone"}`}>{r.v}</div>
+            {r.hint && <div className="mt-1 break-words font-mono text-[11px] text-muted">{r.hint}</div>}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <CopyButton value={r.v} />
@@ -142,25 +160,32 @@ export function Build({ compact = false }: { compact?: boolean }) {
         <SectionHeader
           index="06"
           titleKey="s_build"
-          heading={L("Point your tooling at chain 11190. Everything else is standard EVM.", "把你的工具指向链 11190。其余一切都是标准 EVM。")}
+          heading={L("Point your tooling at chain 1119. Everything else is standard EVM.", "把你的工具指向链 1119。其余一切都是标准 EVM。")}
           lede={L(
-            "Devnet is a single node with 250 ms interval mining, open to anyone. Solidity and Stylus contracts, viem/ethers, Foundry and Hardhat all work unchanged.",
-            "Devnet 是单节点、250 ms 间隔出块，对所有人开放。Solidity 与 Stylus 合约、viem/ethers、Foundry 和 Hardhat 均无需改动即可使用。",
+            "Mainnet Beta is an Arbitrum Nitro rollup on BSC with 250 ms blocks and ANTB gas; senders must hold a Binance Agent ID. Solidity and Stylus contracts, viem/ethers, Foundry and Hardhat all work unchanged. A devnet with test tokens stays available for experiments.",
+            "主网 Beta 是 BSC 上的 Arbitrum Nitro rollup，250 ms 出块、ANTB 作为 gas；发送方必须持有 Binance Agent ID。Solidity 与 Stylus 合约、viem/ethers、Foundry 和 Hardhat 均无需改动即可使用。另有测试代币的 Devnet 供实验。",
           )}
         />
       )}
+      {!compact && <AgentSteps className="mb-12" />}
       <div className="grid grid-cols-1 min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Reveal className="min-w-0">
           <CodeTabs />
         </Reveal>
         <Reveal delay={0.1} className="min-w-0 space-y-5">
           <EndpointCards />
-          <div className="card flex min-w-0 flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
-            <div className="min-w-0">
-              <div className="text-sm font-medium text-bone">AGENT CHAIN Devnet · 11190</div>
-              <div className="mt-1 font-mono text-[11px] text-muted">wallet_addEthereumChain · {DISCLAIMERS.devnet}</div>
+          <div className="card flex min-w-0 flex-col gap-4 p-5">
+            <div className="flex min-w-0 flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-bone">AGENT CHAIN · 1119 · ANTB</div>
+                <div className="mt-1 font-mono text-[11px] text-muted">wallet_addEthereumChain · {L("Mainnet Beta · sending requires an Agent ID", "主网 Beta · 发送交易需要 Agent ID")}</div>
+              </div>
+              <AddChainButton className="shrink-0" network="mainnet" />
             </div>
-            <AddChainButton className="shrink-0" />
+            <div className="hairline flex min-w-0 flex-col gap-3 pt-4 md:flex-row md:items-center md:justify-between">
+              <div className="min-w-0 font-mono text-[11px] text-muted">AGENT CHAIN Devnet · 11190 · {DISCLAIMERS.devnet}</div>
+              <AddChainButton className="shrink-0" network="devnet" />
+            </div>
           </div>
         </Reveal>
       </div>

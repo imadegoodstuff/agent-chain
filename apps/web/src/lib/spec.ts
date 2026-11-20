@@ -2,60 +2,87 @@
  * Facts from SPEC.md (single source of truth). Do not invent numbers here.
  */
 
-/** Canonical public URLs (custom domains). fly.dev hosts remain as fallbacks. */
+/**
+ * Canonical public URLs (custom domains). `RPC_URL` / `EXPLORER_URL` are the
+ * MAINNET (chain 1119) endpoints since 2026-11-20; the devnet moved to the
+ * `devnet-*` hosts. fly.dev hosts remain as fallbacks while DNS propagates.
+ */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://agent-chain.agency";
 export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL ?? "https://rpc.agent-chain.agency";
 export const EXPLORER_URL = process.env.NEXT_PUBLIC_EXPLORER_URL ?? "https://explorer.agent-chain.agency";
+export const DEVNET_RPC_URL = process.env.NEXT_PUBLIC_DEVNET_RPC_URL ?? "https://devnet-rpc.agent-chain.agency";
+export const DEVNET_EXPLORER_URL = process.env.NEXT_PUBLIC_DEVNET_EXPLORER_URL ?? "https://devnet-explorer.agent-chain.agency";
 export const FALLBACK_URLS = {
   site: "https://agentchain-web.fly.dev",
-  rpc: "https://agentchain-rpc.fly.dev",
+  rpc: "https://agentchain-gateway.fly.dev",
+  rpcAlt: "https://mainnet-rpc.agent-chain.agency",
   explorer: "https://agentchain-explorer.fly.dev",
+  devnetRpc: "https://agentchain-rpc.fly.dev",
+  devnetExplorer: "https://agentchain-explorer-devnet.fly.dev",
 } as const;
-/** RPC the server polls for /api/stats (fly.dev host, as agreed). */
-export const STATS_RPC_URL = process.env.STATS_RPC_URL ?? FALLBACK_URLS.rpc;
+/** Devnet RPC the server polls for /api/stats (fly.dev host, as agreed). */
+export const STATS_RPC_URL = process.env.STATS_RPC_URL ?? FALLBACK_URLS.devnetRpc;
+/** Mainnet L2 RPCs the server tries in order for /api/l2 (must answer chainId 1119). */
+export const L2_RPCS = [RPC_URL, FALLBACK_URLS.rpcAlt, FALLBACK_URLS.rpc] as const;
+
+export const MAINNET = {
+  name: "AGENT CHAIN",
+  chainId: 1119,
+  chainIdHex: "0x45f",
+  rpc: RPC_URL,
+  rpcs: L2_RPCS,
+  explorer: EXPLORER_URL,
+  symbol: "ANTB",
+  blockTimeMs: 250,
+  parentChainId: 56,
+  launched: "2026-11-20",
+  stack: "Arbitrum Nitro v3.12.4 · ArbOS 61",
+  minBaseFeeWei: 493_366_955,
+  antbUsdAtLaunch: 91.21,
+} as const;
 
 export const DEVNET = {
   name: "AGENT CHAIN Devnet",
   chainId: 11190,
   chainIdHex: "0x2bb6",
-  rpc: RPC_URL,
-  explorer: EXPLORER_URL,
+  rpc: DEVNET_RPC_URL,
+  explorer: DEVNET_EXPLORER_URL,
   symbol: "tANTB",
   blockTimeMs: 250,
 } as const;
 
 export const NETWORKS = [
   {
-    key: "devnet",
-    name: "AGENT CHAIN Devnet",
-    status: "Live now",
-    chainId: "11190 (0x2BB6)",
+    key: "mainnet",
+    name: "AGENT CHAIN (Mainnet Beta)",
+    status: "Live · 2026-11-20",
+    chainId: "1119 (0x45F)",
     rpc: "https://rpc.agent-chain.agency",
     explorer: "https://explorer.agent-chain.agency",
+    gas: "ANTB (18 dec)",
+    parent: "BSC (56) · Nitro rollup",
+    blockTime: "250 ms",
+  },
+  {
+    key: "devnet",
+    name: "AGENT CHAIN Devnet (test data)",
+    status: "Live · test only",
+    chainId: "11190 (0x2BB6)",
+    rpc: "https://devnet-rpc.agent-chain.agency",
+    explorer: "https://devnet-explorer.agent-chain.agency",
     gas: "tANTB (test, no value)",
-    parent: "— (devnet, single node)",
+    parent: "— (single node)",
     blockTime: "250 ms",
   },
   {
     key: "testnet",
     name: "AGENT CHAIN Testnet",
-    status: "Phase 1",
+    status: "Staging · Dec 2026",
     chainId: "111900",
     rpc: "TBA",
     explorer: "TBA",
     gas: "tANTB",
     parent: "BSC Testnet (97)",
-    blockTime: "250 ms",
-  },
-  {
-    key: "mainnet",
-    name: "AGENT CHAIN",
-    status: "Phase 2",
-    chainId: "1119 (reserved)",
-    rpc: "TBA",
-    explorer: "TBA",
-    gas: "ANTB",
-    parent: "BSC (56)",
     blockTime: "250 ms",
   },
 ] as const;
@@ -98,50 +125,53 @@ export const ROADMAP: readonly {
   title: string;
   when: string;
   live: boolean;
+  done?: boolean;
   items: readonly RoadmapItem[];
 }[] = [
   {
     phase: "Phase 0",
     title: "Devnet",
-    when: "Live · Nov 2026",
-    live: true,
+    when: "Done · Nov 2026",
+    live: false,
+    done: true,
     items: [
-      "Single-node devnet, 250 ms blocks",
-      "Public RPC + explorer",
-      "AgentRegistry + GenesisSeat contracts",
-      "Website, whitepaper v0.1",
+      { text: "Single-node devnet, 250 ms blocks", done: true },
+      { text: "Public RPC + explorer (now devnet-*.agent-chain.agency)", done: true },
+      { text: "AgentRegistry + GenesisSeat contracts", done: true },
+      { text: "Website, whitepaper v0.1", done: true },
     ],
   },
   {
     phase: "Phase 1",
-    title: "Testnet on BSC Testnet",
-    when: "Dec 2026",
-    live: false,
+    title: "Mainnet Beta on BSC",
+    when: "Live · 2026-11-20",
+    live: true,
     items: [
-      "Nitro rollup settling to BSC Testnet",
-      "tANTB as custom gas token",
-      "Bridge + faucet",
-      "Agent ID-gated sequencing",
-      "Paymaster (pay in BNB/USDT)",
-      "Fee keeper live",
-      "Skill published to Binance Skills Hub",
-    ],
-  },
-  {
-    phase: "Phase 2",
-    title: "Mainnet Beta",
-    when: "Dec 2026",
-    live: false,
-    items: [
-      { text: "BSC mainnet contracts live (registry, seats, bridge)", done: true },
-      "Agent ID snapshot → genesis → launch on BSC",
-      "ANTB native gas",
-      "Bridge caps (1 ANTB/address, 500 ANTB total) during Beta",
-      "$AGENT launch on Flap (ANTB pool, open to all wallets)",
+      { text: "Nitro rollup (v3.12.4 / ArbOS 61) settling to BSC, chain 1119", done: true },
+      { text: "ANTB as native gas · min base fee 493,366,955 wei", done: true },
+      { text: "BSC contracts live: AgentRegistryMirror, GenesisSeatClaim, Bridge", done: true },
+      { text: "Agent ID gateway RPC (non-agents rejected, -32050)", done: true },
+      { text: "BoLD validation · single sequencer · batch poster", done: true },
+      "Beta relayer credits Bridge deposits 1:1 on L2 (minutes, by nonce)",
+      "Bridge caps 0.1 ANTB/address, 100 ANTB total (raised to 1/500 later in Beta)",
+      "Skill published to Binance Skills Hub (PR #425 pending)",
       "Submission to Binance Agent ID Hackathon (deadline Dec 9, 2026)",
     ],
   },
   {
+    phase: "Phase 2",
+    title: "Beta hardening",
+    when: "Dec 2026",
+    live: false,
+    items: [
+      "Testnet on BSC Testnet (111900) as staging",
+      "Paymaster (pay in BNB/USDT)",
+      "Fee keeper live (5-min re-pricing)",
+      "Chain owner → Safe multisig",
+      "Nitro Inbox replaces Beta escrow bridge; self-service withdrawals",
+      "$AGENT launch on Flap (ANTB pool, open to all wallets)",
+    ],
+  },  {
     phase: "Phase 3",
     title: "Streaming preconfirmations",
     when: "Q1 2027",

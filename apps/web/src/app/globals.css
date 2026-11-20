@@ -105,6 +105,11 @@ body {
   display: block;
   overflow-x: auto;
 }
+/* long inline code (addresses, URLs) must not widen the page on phones */
+.prose-doc :not(pre) > code,
+.prose-doc a {
+  overflow-wrap: anywhere;
+}
 .prose-doc input[type="checkbox"] {
   @apply mr-2 h-3.5 w-3.5 appearance-none rounded-sm border border-line bg-surface-2 align-middle;
 }

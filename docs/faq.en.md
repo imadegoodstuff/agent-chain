@@ -9,7 +9,7 @@ lang: en
 
 ## 1. What is AGENT CHAIN?
 
-AGENT CHAIN is an agent-native Layer 2 on BNB Smart Chain, built with the Arbitrum Nitro stack in rollup mode (calldata posted to BSC, BoLD fraud proofs, permissioned validators at launch). It differs from other rollups in three ways: gas is paid in ANTB (tokenized Anthropic stock) at a USD-stable rate; only addresses holding a Binance Agent ID or BAB token can transact; and every Agent ID holder on BSC is written into the genesis block with a numbered Genesis Seat. It runs 250 ms blocks, first-come-first-served ordering, no public mempool, tips off.
+AGENT CHAIN is an agent-native Layer 2 on BNB Smart Chain (chain ID 1119, Mainnet Beta live since 2026-11-20), built with the Arbitrum Nitro stack in rollup mode (calldata posted to BSC, BoLD fraud proofs, permissioned validators at launch). It differs from other rollups in three ways: gas is paid in ANTB (tokenized Anthropic stock) at a USD-stable rate; only addresses holding a Binance Agent ID or BAB token can transact; and every Agent ID holder on BSC can claim a numbered Genesis Seat that is mirrored to the L2. It runs 250 ms blocks, first-come-first-served ordering, no public mempool, tips off.
 
 ## 2. Why price gas in a stock token?
 
@@ -34,7 +34,7 @@ No. AGENT CHAIN is independent and not affiliated with, endorsed by, or sponsore
 
 ## 5. Do I need ANTB to use it?
 
-Not necessarily. Native ANTB is the gas token, but an ERC-4337 paymaster (EntryPoint v0.8) lets you pay in BNB or USDT: you request a quote (valid 60 seconds), include the paymaster signature in your user operation, and the paymaster pays ANTB on L2 on your behalf. If you prefer to hold ANTB directly, bridge it 1:1 from BSC (contract `0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`). During Mainnet Beta, deposits are capped at 1 ANTB per address and 500 ANTB total. ANTB eligibility rules of the issuer apply; it is not available to US persons.
+Not necessarily. Native ANTB is the gas token, but an ERC-4337 paymaster (EntryPoint v0.8) lets you pay in BNB or USDT: you request a quote (valid 60 seconds), include the paymaster signature in your user operation, and the paymaster pays ANTB on L2 on your behalf. If you prefer to hold ANTB directly, bridge it 1:1 from BSC (contract `0x38Dd26788Cf2d901E3aBf04efE3007d459d0Fc53`). During Mainnet Beta, deposits through the Bridge (`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`) are capped at 0.1 ANTB per address and 100 ANTB total and are credited on L2 by the Beta relayer within minutes. ANTB eligibility rules of the issuer apply; it is not available to US persons.
 
 ## 6. How does Agent ID gating work?
 
@@ -42,11 +42,13 @@ The Binance Agent ID is an ERC-721 on BSC (`0x60B9262456dE011F7d15a54CdD8c48bAaa
 
 ## 7. What is a Genesis Seat?
 
-Before mainnet, all Agent ID holders on BSC are snapshotted at a published block. Each is written into block 0 with a numbered, non-transferable `GenesisSeat` token (numbered by first-registration order) and a small native ANTB balance. Genesis Seat holders collectively receive 40% of sequencer revenue, pro-rata, one seat one share. Distributions are protocol parameters that governance can change; a seat confers no rights to equity or returns.
+A numbered, non-transferable ERC-721 (`SEAT`) that any Binance Agent ID (or BAB) holder claims once on BSC by calling `GenesisSeatClaim.claim()` at `0x3972579dd0128BF0b6778cB3B457ba1d14D1695b`; seat numbers follow claim order. 236,355 holders were snapshotted at BSC block 134,639,601 and every one of them is eligible. The Beta relayer mirrors seat holders into the L2 `AgentRegistry` on chain 1119 — the genesis block itself is empty, nothing is airdropped. Genesis Seat holders collectively receive 40% of sequencer revenue, pro-rata, one seat one share. Distributions are protocol parameters that governance can change; a seat confers no rights to equity or returns.
 
 ## 8. Is mainnet live?
 
-No. The Devnet is live: chain ID 11190, RPC `https://rpc.agent-chain.agency`, explorer `https://explorer.agent-chain.agency`, 250 ms blocks, single node, test token tANTB with no value. Testnet on BSC Testnet (chain ID 111900) is Phase 1, targeted Dec 2026. Mainnet Beta (chain ID 1119) is Phase 2, also targeted Dec 2026, with bridge caps of 1 ANTB per address and 500 ANTB total. Dates are targets.
+Yes. **Mainnet Beta launched on 2026-11-20.** AGENT CHAIN is chain ID 1119 (0x45F), an Arbitrum Nitro v3.12.4 / ArbOS 61 rollup settling to BSC (56) with ANTB as native gas, a single sequencer and BoLD validation. RPC: `https://rpc.agent-chain.agency` (an Agent ID gateway — senders without an Agent ID/BAB get JSON-RPC error `-32050`; `finalized`/`safe` block tags are not supported, use `latest`). Explorer: `https://explorer.agent-chain.agency`. Bridge deposits on BSC (`0x9eF8CA94a74B7Fbc5ae0b1F7a2dCaFCa14eE2A92`) are credited 1:1 on L2 by a Beta relayer within minutes, ordered by nonce; caps are 0.1 ANTB per address and 100 ANTB total during Beta. The Devnet (chain ID 11190, test token tANTB with no value) remains available at `https://devnet-rpc.agent-chain.agency` / `https://devnet-explorer.agent-chain.agency`.
+
+Two BSC-specific engineering notes: nitro-contracts' `ArbitrumChecker` probes address `0x64`, which on BSC is a retired precompile that burns all forwarded gas, so 5 contracts were rebuilt with a 100k gas cap on that probe (byte-identical otherwise); and because Nitro sees no finality signal from BSC (`difficulty ≠ 0`), the node runs with `check-batch-finality=false` and `parent-chain-block-time=450ms`. See `apps/chain/RESEARCH.md`.
 
 ## 9. Is it EVM compatible?
 

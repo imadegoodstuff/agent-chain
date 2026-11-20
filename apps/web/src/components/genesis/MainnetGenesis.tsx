@@ -173,15 +173,7 @@ export function MainnetGenesis() {
   const now = Date.now();
 
   return (
-    <div className="container-site mt-16">
-      <div className="label-amber mb-6 flex flex-wrap items-center gap-3">
-        <span>BSC MAINNET · 56</span>
-        <span className="text-line">/</span>
-        <span className="inline-flex items-center gap-1.5 text-green">
-          <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" /> GenesisSeatClaim live
-        </span>
-      </div>
-
+    <div className="min-w-0">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* left: stats + claim */}
         <div className="min-w-0 space-y-6">
@@ -215,7 +207,7 @@ export function MainnetGenesis() {
               </span>
             </div>
             <p className="mt-3 text-sm text-muted">
-              One soulbound seat per Agent ID / BAB holder, numbered in claim order, mirrored into block 0. Identity and
+              One soulbound seat per Agent ID / BAB holder, numbered in claim order, mirrored to AGENT CHAIN (chain 1119) by the relayer. Identity and
               priority marker — it confers no rights to revenue, equity or returns.
             </p>
 

@@ -9,8 +9,8 @@ import { useL, useLang } from "../LangProvider";
 
 export const faqItems: { q: string; a: string }[] = [
   {
-    q: "Is AGENT CHAIN live?",
-    a: "Devnet is live now (Phase 0): a single node at chain ID 11190 with 250 ms blocks, a public RPC and explorer, and the AgentRegistry, GenesisSeat and FeeKeeper contracts. Testnet on BSC Testnet (Phase 1) and Mainnet Beta (Phase 2) are both scheduled for December 2026. Devnet tokens have no value.",
+    q: "Is AGENT CHAIN live? Which chain ID?",
+    a: "Yes — Mainnet Beta launched on 2026-11-20: AGENT CHAIN is chain ID 1119, an Arbitrum Nitro rollup (v3.12.4 / ArbOS 61) settling to BSC, with ANTB as native gas, a single sequencer, BoLD validation and an Agent ID gateway at https://rpc.agent-chain.agency (non-agents are rejected with error -32050). The BSC contracts (AgentRegistryMirror, GenesisSeatClaim, Bridge) are live and verified. A devnet (chain 11190, test tokens with no value) remains at devnet-rpc.agent-chain.agency for experiments.",
   },
   {
     q: "What is the gas token?",
@@ -26,7 +26,7 @@ export const faqItems: { q: string; a: string }[] = [
   },
   {
     q: "What is a Genesis Seat?",
-    a: "Before mainnet, all Agent ID holders are snapshotted on BSC and written into the genesis block. Each receives a numbered, non-transferable Genesis Seat and a small native ANTB balance. Seats are identity and priority credentials; the launch fee split allocates 40% of sequencer fees to seats as a governance parameter, not a promise of returns. On devnet, mint() is open to anyone for testing.",
+    a: "A numbered, non-transferable ERC-721 that any Agent ID (or BAB) holder claims once on BSC via GenesisSeatClaim.claim(); seat numbers follow claim order. The Beta relayer mirrors seat holders into the L2 AgentRegistry on chain 1119 — the genesis block itself is empty. Seats are identity and priority credentials; the fee split that allocates 40% of sequencer fees to seats is a governance parameter, not a promise of returns. On devnet, mint() is open to anyone for testing.",
   },
   {
     q: "How fast is it, really?",
@@ -44,8 +44,8 @@ export const faqItems: { q: string; a: string }[] = [
 
 export const faqItemsZh: { q: string; a: string }[] = [
   {
-    q: "AGENT CHAIN 上线了吗？",
-    a: "Devnet 已上线（Phase 0）：单节点，链 ID 11190，250 ms 出块，公开 RPC 与浏览器，以及 AgentRegistry、GenesisSeat、FeeKeeper 合约。BSC Testnet 上的 Testnet（Phase 1）与 Mainnet Beta（Phase 2）均计划于 2026 年 12 月。Devnet 代币没有任何价值。",
+    q: "AGENT CHAIN 上线了吗？链 ID 是多少？",
+    a: "是的——主网 Beta 于 2026-11-20 上线：AGENT CHAIN 链 ID 1119，Arbitrum Nitro rollup（v3.12.4 / ArbOS 61），结算到 BSC，以 ANTB 为原生 gas，单排序器、BoLD 验证，并在 https://rpc.agent-chain.agency 提供 Agent ID 网关（非 agent 会被拒绝，错误码 -32050）。BSC 合约（AgentRegistryMirror、GenesisSeatClaim、Bridge）已上线并通过验证。Devnet（链 11190，测试代币无价值）仍在 devnet-rpc.agent-chain.agency 供实验。",
   },
   {
     q: "Gas 代币是什么？",
@@ -61,7 +61,7 @@ export const faqItemsZh: { q: string; a: string }[] = [
   },
   {
     q: "什么是创世席位（Genesis Seat）？",
-    a: "主网之前，所有 Agent ID 持有者在 BSC 上被快照并写入创世区块。每人获得一个带编号、不可转让的创世席位和少量原生 ANTB 余额。席位是身份与优先级凭证；上线时的费用分配把 40% 排序器费用分配给席位，这是治理参数，而非回报承诺。Devnet 上 mint() 对任何人开放以便测试。",
+    a: "一个带编号、不可转让的 ERC-721，任何 Agent ID（或 BAB）持有者都可在 BSC 上通过 GenesisSeatClaim.claim() 领取一次，编号按领取顺序。Beta relayer 把席位持有者镜像到链 1119 的 L2 AgentRegistry——创世区块本身是空的。席位是身份与优先级凭证；把 40% 排序器费用分配给席位是治理参数，而非回报承诺。Devnet 上 mint() 对任何人开放以便测试。",
   },
   {
     q: "到底有多快？",

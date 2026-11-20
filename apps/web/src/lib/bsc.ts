@@ -176,7 +176,7 @@ export const BSC_CONTRACT_ROWS = [
   {
     name: "Bridge",
     address: BSC_CONTRACTS.Bridge,
-    purpose: "ANTB deposit side (Beta escrow). deposit(amount, l2Recipient) after ANTB.approve; Genesis Deposits credited 1:1 in block 0.",
+    purpose: "ANTB deposit side (Beta escrow). deposit(amount, l2Recipient) after ANTB.approve; the Beta relayer credits native ANTB 1:1 on chain 1119, by nonce.",
     deployBlock: BSC_DEPLOY_BLOCKS.Bridge,
   },
 ] as const;
@@ -235,10 +235,10 @@ export const BSC_OWNER_PERMISSIONS = [
 
 export const BRIDGE_DISCLOSURES = {
   genesisDeposit:
-    "Genesis Deposit: ANTB deposited before mainnet launch is credited 1:1 as native balance in block 0 of AGENT CHAIN, ordered by deposit nonce.",
+    "Relayer credit: ANTB deposited here is credited 1:1 as native ANTB on AGENT CHAIN (chain 1119) by the Beta relayer, usually within minutes, in deposit-nonce order.",
   escrow:
     "Beta escrow: Funds are held by the Bridge contract; the owner key can withdraw them (withdrawTo) — see owner permissions.",
   trading:
     "Trading / price risk: ANTB is a tokenized stock whose price moves with the underlying and with DEX liquidity. Bridged ANTB is a gas token on AGENT CHAIN, not an investment. Deposit only what you are prepared to have escrowed under Beta terms.",
-  notLive: "The AGENT CHAIN L2 mainnet is not live yet. There is no withdrawal path until the Nitro chain launches.",
+  notLive: "Mainnet Beta: single sequencer, BoLD validation, no finalized tag. Withdrawals L2 → BSC go through the Nitro Outbox after assertion confirmation; there is no self-service withdrawal UI yet.",
 } as const;

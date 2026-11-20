@@ -73,7 +73,7 @@ export function Nav() {
         <div className="flex items-center gap-3">
           <span className="hidden items-center gap-2 rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] tracking-wider text-muted sm:inline-flex">
             <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" />
-            DEVNET
+            MAINNET BETA · 1119
           </span>
           <LangToggle />
           <button
