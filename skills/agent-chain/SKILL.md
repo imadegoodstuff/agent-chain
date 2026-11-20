@@ -10,9 +10,13 @@ description: |
   AGENT CHAIN fee / how much does a tx cost on AGENT CHAIN / fee estimate in ANTB or USD,
   send tANTB / send on AGENT CHAIN / call a contract on AGENT CHAIN / chain id 11190,
   genesis stats / how many seats, or any question about transacting on AGENT CHAIN.
+version: '0.1.0'
+license: MIT
 metadata:
-  author: agent-chain
+  author: imadegoodstuff
   version: '0.1.0'
+  homepage: https://agent-chain.agency
+  repository: https://github.com/imadegoodstuff/agent-chain
   requiredCliVersion: '1.12.0'
   openclaw:
     requires:
